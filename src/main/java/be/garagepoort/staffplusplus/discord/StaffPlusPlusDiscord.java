@@ -4,6 +4,7 @@ import be.garagepoort.staffplusplus.discord.altdetect.AltDetectionListener;
 import be.garagepoort.staffplusplus.discord.ban.BanListener;
 import be.garagepoort.staffplusplus.discord.chat.ChatListener;
 import be.garagepoort.staffplusplus.discord.common.TemplateRepository;
+import be.garagepoort.staffplusplus.discord.common.config.ConfigUpdater;
 import be.garagepoort.staffplusplus.discord.kick.KickListener;
 import be.garagepoort.staffplusplus.discord.mute.MuteListener;
 import be.garagepoort.staffplusplus.discord.reports.ReportListener;

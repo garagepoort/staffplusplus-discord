@@ -1,5 +1,8 @@
-package be.garagepoort.staffplusplus.discord;
+package be.garagepoort.staffplusplus.discord.common.config;
 
+import be.garagepoort.staffplusplus.discord.StaffPlusPlusDiscord;
+import be.garagepoort.staffplusplus.discord.common.config.migrators.ConfigMigrator;
+import be.garagepoort.staffplusplus.discord.common.config.migrators.ReportsConfigMigrator;
 import com.google.common.base.Charsets;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -13,14 +16,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConfigUpdater {
 
     private static final String CONFIG_FILE = "config.yml";
+
+    private static final List<ConfigMigrator> MIGRATORS = Collections.singletonList(new ReportsConfigMigrator());
 
     public static boolean updateConfig(StaffPlusPlusDiscord staffPlus) {
         try {
@@ -35,6 +38,8 @@ public class ConfigUpdater {
                     counter.getAndIncrement();
                 }
             });
+
+            MIGRATORS.forEach(m -> m.migrate(config));
             staffPlus.saveConfig();
             if (counter.get() > 0) {
                 staffPlus.getLogger().info("Configuration file Fixed. [" + counter.get() + "] properties were added. Should StaffPlusPlusDiscord still have problems starting up, please compare your config with the default configuration: https://github.com/garagepoort/StaffPlusPlus/blob/master/StaffPlusPlusDiscord/src/main/resources/config.yml");

@@ -25,28 +25,44 @@ import java.time.format.DateTimeFormatter;
 
 public class ReportListener implements StaffPlusPlusListener {
 
-    private DiscordClient discordClient;
+    private DiscordClient reportDiscordClient;
+    private DiscordClient playerReportDiscordClient;
     private FileConfiguration config;
     private final TemplateRepository templateRepository;
 
-    public ReportListener(FileConfiguration config, TemplateRepository templateRepository)  {
+    public ReportListener(FileConfiguration config, TemplateRepository templateRepository) {
         this.config = config;
         this.templateRepository = templateRepository;
     }
 
     public void init() {
-        discordClient = Feign.builder()
-            .client(new OkHttpClient())
-            .encoder(new GsonEncoder())
-            .decoder(new GsonDecoder())
-            .logger(new Slf4jLogger(DiscordClient.class))
-            .logLevel(Logger.Level.FULL)
-            .target(DiscordClient.class, config.getString("StaffPlusPlusDiscord.webhookUrl"));
+        String reportWebhookUrl = config.getString("StaffPlusPlusDiscord.reports.webhookUrl");
+        String playerReportWebhookUrl = config.getString("StaffPlusPlusDiscord.reports.playerReportsWebhookUrl", null);
+
+        reportDiscordClient = Feign.builder()
+                .client(new OkHttpClient())
+                .encoder(new GsonEncoder())
+                .decoder(new GsonDecoder())
+                .logger(new Slf4jLogger(DiscordClient.class))
+                .logLevel(Logger.Level.FULL)
+                .target(DiscordClient.class, reportWebhookUrl);
+
+        if (StringUtils.isNotEmpty(playerReportWebhookUrl)) {
+            playerReportDiscordClient = Feign.builder()
+                    .client(new OkHttpClient())
+                    .encoder(new GsonEncoder())
+                    .decoder(new GsonDecoder())
+                    .logger(new Slf4jLogger(DiscordClient.class))
+                    .logLevel(Logger.Level.FULL)
+                    .target(DiscordClient.class, playerReportWebhookUrl);
+        } else {
+            playerReportDiscordClient = reportDiscordClient;
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleCreateReport(CreateReportEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.notifyOpen")) {
+        if (!config.getBoolean("StaffPlusPlusDiscord.reports.notifyOpen")) {
             return;
         }
 
@@ -55,7 +71,7 @@ public class ReportListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleReopenReport(ReopenReportEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.notifyReopen")) {
+        if (!config.getBoolean("StaffPlusPlusDiscord.reports.notifyReopen")) {
             return;
         }
 
@@ -65,7 +81,7 @@ public class ReportListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleAcceptReport(AcceptReportEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.notifyAccept")) {
+        if (!config.getBoolean("StaffPlusPlusDiscord.reports.notifyAccept")) {
             return;
         }
 
@@ -75,7 +91,7 @@ public class ReportListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleRejectReport(RejectReportEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.notifyReject")) {
+        if (!config.getBoolean("StaffPlusPlusDiscord.reports.notifyReject")) {
             return;
         }
 
@@ -84,7 +100,7 @@ public class ReportListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleResolveReport(ResolveReportEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.notifyResolve")) {
+        if (!config.getBoolean("StaffPlusPlusDiscord.reports.notifyResolve")) {
             return;
         }
 
@@ -93,6 +109,7 @@ public class ReportListener implements StaffPlusPlusListener {
 
     public void buildReport(IReport report, String key) {
         String createReportTemplate = replaceReportCreatedTemplate(report, templateRepository.getTemplate(key));
+        DiscordClient discordClient = report.getCulpritUuid() == null ? this.reportDiscordClient : playerReportDiscordClient;
         DiscordUtil.sendEvent(discordClient, createReportTemplate);
     }
 
@@ -107,15 +124,15 @@ public class ReportListener implements StaffPlusPlusListener {
     }
 
     public boolean isEnabled() {
-        return config.getBoolean("StaffPlusPlusDiscord.notifyOpen") ||
-            config.getBoolean("StaffPlusPlusDiscord.notifyReopen") ||
-            config.getBoolean("StaffPlusPlusDiscord.notifyAccept") ||
-            config.getBoolean("StaffPlusPlusDiscord.notifyReject") ||
-            config.getBoolean("StaffPlusPlusDiscord.notifyResolve");
+        return config.getBoolean("StaffPlusPlusDiscord.reports.notifyOpen") ||
+                config.getBoolean("StaffPlusPlusDiscord.reports.notifyReopen") ||
+                config.getBoolean("StaffPlusPlusDiscord.reports.notifyAccept") ||
+                config.getBoolean("StaffPlusPlusDiscord.reports.notifyReject") ||
+                config.getBoolean("StaffPlusPlusDiscord.reports.notifyResolve");
     }
 
     @Override
     public boolean isValid() {
-        return StringUtils.isNotBlank(config.getString("StaffPlusPlusDiscord.webhookUrl"));
+        return StringUtils.isNotBlank(config.getString("StaffPlusPlusDiscord.reports.webhookUrl"));
     }
 }
