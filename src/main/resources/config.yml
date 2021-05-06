@@ -50,7 +50,7 @@ StaffPlusPlusDiscord:
         webhookUrl: ""
         # Ores that should be notified to discord, leave empty to disable all notifications. Should be semi-colon separated
         # possible values: any bukkit material
-        # example value: DIAMOND;REDSTON
+        # example value: DIAMOND;REDSTONE
         enabledOres: ""
     staffmode:
         webhookUrl: ""
