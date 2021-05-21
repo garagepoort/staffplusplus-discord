@@ -64,4 +64,3 @@ StaffPlusPlusDiscord:
         phrase-detection: false
     staffchat:
         sync: false
-        message-format: "&9&l(discord) &7%text%"

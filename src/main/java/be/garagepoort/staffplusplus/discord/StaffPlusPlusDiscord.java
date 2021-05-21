@@ -18,11 +18,14 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class StaffPlusPlusDiscord extends JavaPlugin {
 
     private static StaffPlusPlusDiscord plugin;
+    private static final List<StaffPlusPlusListener> LISTENERS = new ArrayList<>();
 
 
     public static StaffPlusPlusDiscord get() {
@@ -50,6 +53,8 @@ public class StaffPlusPlusDiscord extends JavaPlugin {
         reloadConfig();
         TemplateRepository templateRepository = new TemplateRepository(getConfig());
         HandlerList.unregisterAll(this);
+        LISTENERS.forEach(StaffPlusPlusListener::teardown);
+        LISTENERS.clear();
         initializeListeners(templateRepository, getConfig());
     }
 
@@ -75,6 +80,7 @@ public class StaffPlusPlusDiscord extends JavaPlugin {
                 return;
             }
             listener.init();
+            LISTENERS.add(listener);
             getServer().getPluginManager().registerEvents(listener, this);
         }
     }

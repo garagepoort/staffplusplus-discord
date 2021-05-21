@@ -16,6 +16,7 @@ public class StaffChatListener implements StaffPlusPlusListener {
     private final FileConfiguration config;
     private final StaffPlusPlusDiscord staffPlusPlusDiscord;
     private IStaffPlus staffPlus;
+    private DiscordStaffChatListener discordListener;
 
     public StaffChatListener(FileConfiguration config, StaffPlusPlusDiscord staffPlusPlusDiscord) {
         this.config = config;
@@ -28,7 +29,15 @@ public class StaffChatListener implements StaffPlusPlusListener {
 
     public void init() {
         if (staffPlusPlusDiscord.getServer().getPluginManager().isPluginEnabled("DiscordSRV")) {
-            DiscordSRV.api.subscribe(new DiscordStaffChatListener(staffPlusPlusDiscord, staffPlus));
+            discordListener = new DiscordStaffChatListener(staffPlusPlusDiscord, staffPlus);
+            DiscordSRV.api.subscribe(discordListener);
+        }
+    }
+
+    @Override
+    public void teardown() {
+        if (staffPlusPlusDiscord.getServer().getPluginManager().isPluginEnabled("DiscordSRV")) {
+            DiscordSRV.api.unsubscribe(discordListener);
         }
     }
 
@@ -39,7 +48,7 @@ public class StaffChatListener implements StaffPlusPlusListener {
         }
         // Send to discord off the main thread (just like DiscordSRV does)
         staffPlusPlusDiscord.getServer().getScheduler().runTaskAsynchronously(staffPlusPlusDiscord, () ->
-            DiscordSRV.getPlugin().processChatMessage(event.getPlayer(), event.getMessage(), DiscordStaffChatListener.CHANNEL, false)
+            DiscordSRV.getPlugin().processChatMessage(event.getPlayer(), event.getMessage(), DiscordStaffChatListener.CHANNEL_PREFIX + event.getChannel(), false)
         );
     }
 

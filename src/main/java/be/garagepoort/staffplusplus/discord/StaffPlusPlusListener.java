@@ -6,6 +6,8 @@ public interface StaffPlusPlusListener extends Listener {
 
     void init();
 
+    default void teardown() {}
+
     boolean isEnabled();
 
     boolean isValid();
