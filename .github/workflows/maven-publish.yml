@@ -22,6 +22,10 @@ jobs:
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
 
+      - uses: s4u/maven-settings-action@v2.4.0
+        with:
+          mirrors: '[{"id": "nexus-staffplusplus-mirror", "name": "nexus-staffplusplus", "mirrorOf": "external:http:*", "url": "http://staffplusplus.org:8081/repository/staffplusplus"}]'
+
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
