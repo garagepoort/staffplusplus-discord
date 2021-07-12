@@ -1,6 +1,9 @@
 package be.garagepoort.staffplusplus.discord.warnings;
 
-import be.garagepoort.staffplusplus.discord.StaffPlusPlusListener;
+import be.garagepoort.mcioc.IocBean;
+import be.garagepoort.mcioc.IocMultiProvider;
+import be.garagepoort.mcioc.configuration.ConfigProperty;
+import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
 import be.garagepoort.staffplusplus.discord.common.JexlTemplateParser;
@@ -18,7 +21,6 @@ import net.shortninja.staffplusplus.warnings.WarningAppealedEvent;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
@@ -26,15 +28,23 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+@IocBean
+@IocMultiProvider(StaffPlusPlusListener.class)
 public class AppealListener implements StaffPlusPlusListener {
 
-    private static final String APPEALS_PREFIX = "StaffPlusPlusDiscord.warnings.appeals";
+    @ConfigProperty("StaffPlusPlusDiscord.warnings.appeals.webhookUrl")
+    private String webhookUrl;
+    @ConfigProperty("StaffPlusPlusDiscord.warnings.appeals.notifyCreate")
+    private boolean notifyCreate;
+    @ConfigProperty("StaffPlusPlusDiscord.warnings.appeals.notifyApproved")
+    private boolean notifyApproved;
+    @ConfigProperty("StaffPlusPlusDiscord.warnings.appeals.notifyRejected")
+    private boolean notifyRejected;
+
     private DiscordClient discordClient;
-    private FileConfiguration config;
     private final TemplateRepository templateRepository;
 
-    public AppealListener(FileConfiguration config, TemplateRepository templateRepository)  {
-        this.config = config;
+    public AppealListener(TemplateRepository templateRepository)  {
         this.templateRepository = templateRepository;
     }
 
@@ -45,12 +55,12 @@ public class AppealListener implements StaffPlusPlusListener {
             .decoder(new GsonDecoder())
             .logger(new Slf4jLogger(DiscordClient.class))
             .logLevel(Logger.Level.FULL)
-            .target(DiscordClient.class, config.getString(APPEALS_PREFIX + ".webhookUrl", ""));
+            .target(DiscordClient.class, webhookUrl);
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleCreateAppeal(WarningAppealedEvent event) {
-        if (!config.getBoolean(APPEALS_PREFIX + ".notifyCreate")) {
+        if (!notifyCreate) {
             return;
         }
 
@@ -59,7 +69,7 @@ public class AppealListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleAppealApproved(WarningAppealApprovedEvent event) {
-        if (!config.getBoolean(APPEALS_PREFIX + ".notifyApproved")) {
+        if (!notifyApproved) {
             return;
         }
 
@@ -68,7 +78,7 @@ public class AppealListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleAppealRejected(WarningAppealRejectedEvent event) {
-        if (!config.getBoolean(APPEALS_PREFIX + ".notifyRejected")) {
+        if (!notifyRejected) {
             return;
         }
 
@@ -86,11 +96,13 @@ public class AppealListener implements StaffPlusPlusListener {
     }
 
     public boolean isEnabled() {
-        return config.getBoolean(APPEALS_PREFIX + ".notifyCreate");
+        return notifyCreate;
     }
 
     @Override
-    public boolean isValid() {
-        return StringUtils.isNotBlank(config.getString(APPEALS_PREFIX + ".webhookUrl"));
+    public void validate() {
+        if (isEnabled() && StringUtils.isBlank(webhookUrl)) {
+            throw new RuntimeException("No appeals webhookUrl provided in the configuration.");
+        }
     }
 }

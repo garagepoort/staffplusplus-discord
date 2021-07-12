@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord;
+package be.garagepoort.staffplusplus.discord.common;
 
 import org.bukkit.event.Listener;
 
@@ -10,5 +10,5 @@ public interface StaffPlusPlusListener extends Listener {
 
     boolean isEnabled();
 
-    boolean isValid();
+    void validate();
 }

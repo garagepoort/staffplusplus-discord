@@ -1,6 +1,9 @@
 package be.garagepoort.staffplusplus.discord.kick;
 
-import be.garagepoort.staffplusplus.discord.StaffPlusPlusListener;
+import be.garagepoort.mcioc.IocBean;
+import be.garagepoort.mcioc.IocMultiProvider;
+import be.garagepoort.mcioc.configuration.ConfigProperty;
+import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
 import be.garagepoort.staffplusplus.discord.common.JexlTemplateParser;
@@ -16,7 +19,6 @@ import net.shortninja.staffplusplus.kick.KickEvent;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
@@ -24,30 +26,35 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+@IocBean
+@IocMultiProvider(StaffPlusPlusListener.class)
 public class KickListener implements StaffPlusPlusListener {
 
+    @ConfigProperty("StaffPlusPlusDiscord.kicks.webhookUrl")
+    private String webhookUrl;
+    @ConfigProperty("StaffPlusPlusDiscord.kicks.kick")
+    private boolean notifyKick;
+
     private DiscordClient discordClient;
-    private FileConfiguration config;
     private final TemplateRepository templateRepository;
 
-    public KickListener(FileConfiguration config, TemplateRepository templateRepository)  {
-        this.config = config;
+    public KickListener(TemplateRepository templateRepository) {
         this.templateRepository = templateRepository;
     }
 
     public void init() {
         discordClient = Feign.builder()
-            .client(new OkHttpClient())
-            .encoder(new GsonEncoder())
-            .decoder(new GsonDecoder())
-            .logger(new Slf4jLogger(DiscordClient.class))
-            .logLevel(Logger.Level.FULL)
-            .target(DiscordClient.class, config.getString("StaffPlusPlusDiscord.kicks.webhookUrl", ""));
+                .client(new OkHttpClient())
+                .encoder(new GsonEncoder())
+                .decoder(new GsonDecoder())
+                .logger(new Slf4jLogger(DiscordClient.class))
+                .logLevel(Logger.Level.FULL)
+                .target(DiscordClient.class, webhookUrl);
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleKickEvent(KickEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.kicks.kick")) {
+        if (!notifyKick) {
             return;
         }
 
@@ -66,11 +73,13 @@ public class KickListener implements StaffPlusPlusListener {
     }
 
     public boolean isEnabled() {
-        return config.getBoolean("StaffPlusPlusDiscord.kicks.kick");
+        return notifyKick;
     }
 
     @Override
-    public boolean isValid() {
-        return StringUtils.isNotBlank(config.getString("StaffPlusPlusDiscord.kicks.webhookUrl"));
+    public void validate() {
+        if (isEnabled() && StringUtils.isBlank(webhookUrl)) {
+            throw new RuntimeException("No kick webhookUrl provided in the configuration.");
+        }
     }
 }

@@ -1,26 +1,30 @@
 package be.garagepoort.staffplusplus.discord.staffchat;
 
+import be.garagepoort.mcioc.IocBean;
+import be.garagepoort.mcioc.IocMultiProvider;
+import be.garagepoort.mcioc.configuration.ConfigProperty;
 import be.garagepoort.staffplusplus.discord.StaffPlusPlusDiscord;
-import be.garagepoort.staffplusplus.discord.StaffPlusPlusListener;
+import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import github.scarsz.discordsrv.DiscordSRV;
 import net.shortninja.staffplusplus.IStaffPlus;
 import net.shortninja.staffplusplus.staffmode.chat.StaffChatEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
+@IocBean
+@IocMultiProvider(StaffPlusPlusListener.class)
 public class StaffChatListener implements StaffPlusPlusListener {
+    @ConfigProperty("StaffPlusPlusDiscord.staffchat.sync")
+    private boolean syncEnabled;
 
-    private final FileConfiguration config;
     private final StaffPlusPlusDiscord staffPlusPlusDiscord;
     private IStaffPlus staffPlus;
     private DiscordStaffChatListener discordListener;
 
-    public StaffChatListener(FileConfiguration config, StaffPlusPlusDiscord staffPlusPlusDiscord) {
-        this.config = config;
-        this.staffPlusPlusDiscord = staffPlusPlusDiscord;
+    public StaffChatListener() {
+        this.staffPlusPlusDiscord = StaffPlusPlusDiscord.get();
         RegisteredServiceProvider<IStaffPlus> provider = Bukkit.getServicesManager().getRegistration(IStaffPlus.class);
         if (provider != null) {
             this.staffPlus = provider.getProvider();
@@ -43,7 +47,7 @@ public class StaffChatListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleStaffChatEvent(StaffChatEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.staffchat.sync")) {
+        if (!syncEnabled) {
             return;
         }
         // Send to discord off the main thread (just like DiscordSRV does)
@@ -54,11 +58,14 @@ public class StaffChatListener implements StaffPlusPlusListener {
 
     @Override
     public boolean isEnabled() {
-        return config.getBoolean("StaffPlusPlusDiscord.staffchat.sync") && staffPlus != null;
+        return syncEnabled && staffPlus != null;
     }
 
     @Override
-    public boolean isValid() {
-        return staffPlusPlusDiscord.getServer().getPluginManager().isPluginEnabled("DiscordSRV");
+    public void validate() {
+        boolean discordSRVEnabled = staffPlusPlusDiscord.getServer().getPluginManager().isPluginEnabled("DiscordSRV");
+        if(isEnabled() && !discordSRVEnabled) {
+            throw new RuntimeException("DiscordSRV plugin not enabled! Disable Staffchat sync or enable the DiscordSRV plugin.");
+        }
     }
 }

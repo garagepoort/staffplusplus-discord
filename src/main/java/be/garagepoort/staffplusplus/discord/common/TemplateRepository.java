@@ -1,6 +1,7 @@
 package be.garagepoort.staffplusplus.discord.common;
 
-import org.bukkit.configuration.file.FileConfiguration;
+import be.garagepoort.mcioc.IocBean;
+import be.garagepoort.staffplusplus.discord.StaffPlusPlusConfiguration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Map;
 import static be.garagepoort.staffplusplus.discord.common.TemplateResourceUtil.getFullTemplatePath;
 import static java.util.Arrays.stream;
 
+@IocBean
 public class TemplateRepository {
 
     private final Map<String, String> templates = new HashMap<>();
@@ -35,9 +37,9 @@ public class TemplateRepository {
         new TemplateFile("xray", "xray")
     };
 
-    public TemplateRepository(FileConfiguration config) {
-        boolean replaceTemplates = config.getBoolean("StaffPlusPlusDiscord.updateTemplates", true);
-        String templatePack = config.getString("StaffPlusPlusDiscord.templatePack", "default");
+    public TemplateRepository(StaffPlusPlusConfiguration staffPlusPlusConfiguration) {
+        boolean replaceTemplates = staffPlusPlusConfiguration.updateTemplates;
+        String templatePack = staffPlusPlusConfiguration.templatePack;
 
         stream(templateFiles)
             .forEach(templateFile -> TemplateResourceUtil.saveTemplate(templatePack, templateFile.getFilePath(), replaceTemplates));

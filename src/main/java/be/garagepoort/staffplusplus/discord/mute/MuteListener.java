@@ -1,6 +1,9 @@
 package be.garagepoort.staffplusplus.discord.mute;
 
-import be.garagepoort.staffplusplus.discord.StaffPlusPlusListener;
+import be.garagepoort.mcioc.IocBean;
+import be.garagepoort.mcioc.IocMultiProvider;
+import be.garagepoort.mcioc.configuration.ConfigProperty;
+import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
 import be.garagepoort.staffplusplus.discord.common.JexlTemplateParser;
@@ -17,7 +20,6 @@ import net.shortninja.staffplusplus.mute.UnmuteEvent;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
@@ -25,30 +27,37 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+@IocBean
+@IocMultiProvider(StaffPlusPlusListener.class)
 public class MuteListener implements StaffPlusPlusListener {
 
+    @ConfigProperty("StaffPlusPlusDiscord.mutes.webhookUrl")
+    private String webhookUrl;
+    @ConfigProperty("StaffPlusPlusDiscord.mutes.mute")
+    private boolean notifyMute;
+    @ConfigProperty("StaffPlusPlusDiscord.mutes.unmute")
+    private boolean notifyUnmute;
+
     private DiscordClient discordClient;
-    private FileConfiguration config;
     private final TemplateRepository templateRepository;
 
-    public MuteListener(FileConfiguration config, TemplateRepository templateRepository)  {
-        this.config = config;
+    public MuteListener(TemplateRepository templateRepository) {
         this.templateRepository = templateRepository;
     }
 
     public void init() {
         discordClient = Feign.builder()
-            .client(new OkHttpClient())
-            .encoder(new GsonEncoder())
-            .decoder(new GsonDecoder())
-            .logger(new Slf4jLogger(DiscordClient.class))
-            .logLevel(Logger.Level.FULL)
-            .target(DiscordClient.class, config.getString("StaffPlusPlusDiscord.mutes.webhookUrl", ""));
+                .client(new OkHttpClient())
+                .encoder(new GsonEncoder())
+                .decoder(new GsonDecoder())
+                .logger(new Slf4jLogger(DiscordClient.class))
+                .logLevel(Logger.Level.FULL)
+                .target(DiscordClient.class, webhookUrl);
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleMuteEvent(MuteEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.mutes.mute")) {
+        if (!notifyMute) {
             return;
         }
 
@@ -58,7 +67,7 @@ public class MuteListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleUnmuteEvent(UnmuteEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.mutes.unmute")) {
+        if (!notifyUnmute) {
             return;
         }
 
@@ -76,12 +85,13 @@ public class MuteListener implements StaffPlusPlusListener {
     }
 
     public boolean isEnabled() {
-        return config.getBoolean("StaffPlusPlusDiscord.mutes.mute") ||
-            config.getBoolean("StaffPlusPlusDiscord.mutes.unmute");
+        return notifyMute || notifyUnmute;
     }
 
     @Override
-    public boolean isValid() {
-        return StringUtils.isNotBlank(config.getString("StaffPlusPlusDiscord.mutes.webhookUrl"));
+    public void validate() {
+        if (isEnabled() && StringUtils.isBlank(webhookUrl)) {
+            throw new RuntimeException("No mute webhookUrl provided in the configuration.");
+        }
     }
 }

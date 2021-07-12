@@ -1,6 +1,9 @@
 package be.garagepoort.staffplusplus.discord.chat;
 
-import be.garagepoort.staffplusplus.discord.StaffPlusPlusListener;
+import be.garagepoort.mcioc.IocBean;
+import be.garagepoort.mcioc.IocMultiProvider;
+import be.garagepoort.mcioc.configuration.ConfigProperty;
+import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
 import be.garagepoort.staffplusplus.discord.common.JexlTemplateParser;
@@ -15,21 +18,25 @@ import net.shortninja.staffplusplus.chat.PhrasesDetectedEvent;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+@IocBean
+@IocMultiProvider(StaffPlusPlusListener.class)
 public class ChatListener implements StaffPlusPlusListener {
 
+    @ConfigProperty("StaffPlusPlusDiscord.chat.webhookUrl")
+    private String webhookUrl;
+    @ConfigProperty("StaffPlusPlusDiscord.chat.phrase-detection")
+    private boolean notifyPhraseDetection;
+
     private DiscordClient discordClient;
-    private FileConfiguration config;
     private final TemplateRepository templateRepository;
 
-    public ChatListener(FileConfiguration config, TemplateRepository templateRepository)  {
-        this.config = config;
+    public ChatListener(TemplateRepository templateRepository)  {
         this.templateRepository = templateRepository;
     }
 
@@ -40,12 +47,12 @@ public class ChatListener implements StaffPlusPlusListener {
             .decoder(new GsonDecoder())
             .logger(new Slf4jLogger(DiscordClient.class))
             .logLevel(Logger.Level.FULL)
-            .target(DiscordClient.class, config.getString("StaffPlusPlusDiscord.chat.webhookUrl", ""));
+            .target(DiscordClient.class, webhookUrl);
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handlePhraseDetectedEvent(PhrasesDetectedEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.chat.phrase-detection")) {
+        if (!notifyPhraseDetection) {
             return;
         }
 
@@ -64,11 +71,13 @@ public class ChatListener implements StaffPlusPlusListener {
     }
 
     public boolean isEnabled() {
-        return config.getBoolean("StaffPlusPlusDiscord.chat.phrase-detection");
+        return notifyPhraseDetection;
     }
 
     @Override
-    public boolean isValid() {
-        return StringUtils.isNotBlank(config.getString("StaffPlusPlusDiscord.chat.webhookUrl"));
+    public void validate() {
+        if (isEnabled() && StringUtils.isBlank(webhookUrl)) {
+            throw new RuntimeException("No chat webhookUrl provided in the configuration.");
+        }
     }
 }

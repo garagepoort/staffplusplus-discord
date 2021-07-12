@@ -1,6 +1,9 @@
 package be.garagepoort.staffplusplus.discord.staffmode;
 
-import be.garagepoort.staffplusplus.discord.StaffPlusPlusListener;
+import be.garagepoort.mcioc.IocBean;
+import be.garagepoort.mcioc.IocMultiProvider;
+import be.garagepoort.mcioc.configuration.ConfigProperty;
+import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
 import be.garagepoort.staffplusplus.discord.common.JexlTemplateParser;
@@ -16,7 +19,6 @@ import net.shortninja.staffplusplus.staffmode.ExitStaffModeEvent;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,14 +26,21 @@ import org.bukkit.event.EventPriority;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+@IocBean
+@IocMultiProvider(StaffPlusPlusListener.class)
 public class StaffModeListener implements StaffPlusPlusListener {
 
+    @ConfigProperty("StaffPlusPlusDiscord.staffmode.webhookUrl")
+    private String webhookUrl;
+    @ConfigProperty("StaffPlusPlusDiscord.staffmode.notify-enter")
+    private boolean notifyEnter;
+    @ConfigProperty("StaffPlusPlusDiscord.staffmode.notify-exit")
+    private boolean notifyExit;
+
     private DiscordClient discordClient;
-    private FileConfiguration config;
     private final TemplateRepository templateRepository;
 
-    public StaffModeListener(FileConfiguration config, TemplateRepository templateRepository)  {
-        this.config = config;
+    public StaffModeListener(TemplateRepository templateRepository)  {
         this.templateRepository = templateRepository;
     }
 
@@ -42,12 +51,12 @@ public class StaffModeListener implements StaffPlusPlusListener {
             .decoder(new GsonDecoder())
             .logger(new Slf4jLogger(DiscordClient.class))
             .logLevel(Logger.Level.FULL)
-            .target(DiscordClient.class, config.getString("StaffPlusPlusDiscord.staffmode.webhookUrl", ""));
+            .target(DiscordClient.class, webhookUrl);
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handEnterStaffMode(EnterStaffModeEvent event) {
-        if(!config.getBoolean("StaffPlusPlusDiscord.staffmode.notify-enter")) {
+        if(!notifyEnter) {
             return;
         }
         buildEnterStaffModeResult(event, "staffmode/enter-staffmode");
@@ -55,7 +64,7 @@ public class StaffModeListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handEnterStaffMode(ExitStaffModeEvent event) {
-        if(!config.getBoolean("StaffPlusPlusDiscord.staffmode.notify-exit")) {
+        if(!notifyExit) {
             return;
         }
         buildEnterStaffModeResult(event, "staffmode/exit-staffmode");
@@ -71,12 +80,13 @@ public class StaffModeListener implements StaffPlusPlusListener {
     }
 
     public boolean isEnabled() {
-        return config.getBoolean("StaffPlusPlusDiscord.staffmode.notify-enter") ||
-            config.getBoolean("StaffPlusPlusDiscord.staffmode.notify-exit");
+        return notifyEnter || notifyExit;
     }
 
     @Override
-    public boolean isValid() {
-        return StringUtils.isNotBlank(config.getString("StaffPlusPlusDiscord.staffmode.webhookUrl"));
+    public void validate() {
+        if (isEnabled() && StringUtils.isBlank(webhookUrl)) {
+            throw new RuntimeException("No staffmode webhookUrl provided in the configuration.");
+        }
     }
 }

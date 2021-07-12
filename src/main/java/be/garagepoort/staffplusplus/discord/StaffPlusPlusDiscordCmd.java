@@ -1,9 +1,13 @@
 package be.garagepoort.staffplusplus.discord;
 
+import be.garagepoort.mcioc.IocBean;
+import be.garagepoort.mcioc.IocCommandHandler;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
+@IocBean
+@IocCommandHandler("staffplusplusdiscord")
 public class StaffPlusPlusDiscordCmd implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String alias, String[] args) {

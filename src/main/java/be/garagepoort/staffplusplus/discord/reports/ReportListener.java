@@ -1,6 +1,9 @@
 package be.garagepoort.staffplusplus.discord.reports;
 
-import be.garagepoort.staffplusplus.discord.StaffPlusPlusListener;
+import be.garagepoort.mcioc.IocBean;
+import be.garagepoort.mcioc.IocMultiProvider;
+import be.garagepoort.mcioc.configuration.ConfigProperty;
+import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
 import be.garagepoort.staffplusplus.discord.common.JexlTemplateParser;
@@ -15,7 +18,6 @@ import net.shortninja.staffplusplus.reports.*;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
@@ -23,21 +25,36 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+@IocBean
+@IocMultiProvider(StaffPlusPlusListener.class)
 public class ReportListener implements StaffPlusPlusListener {
+
+    @ConfigProperty("StaffPlusPlusDiscord.reports.webhookUrl")
+    private String reportsWebhookUrl;
+    @ConfigProperty("StaffPlusPlusDiscord.reports.playerReportsWebhookUrl")
+    private String playerReportsWebhookUrl;
+    @ConfigProperty("StaffPlusPlusDiscord.reports.notifyOpen")
+    private boolean notifyOpen;
+    @ConfigProperty("StaffPlusPlusDiscord.reports.notifyReopen")
+    private boolean notifyReopen;
+    @ConfigProperty("StaffPlusPlusDiscord.reports.notifyAccept")
+    private boolean notifyAccept;
+    @ConfigProperty("StaffPlusPlusDiscord.reports.notifyReject")
+    private boolean notifyReject;
+    @ConfigProperty("StaffPlusPlusDiscord.reports.notifyResolve")
+    private boolean notifyResolve;
 
     private DiscordClient reportDiscordClient;
     private DiscordClient playerReportDiscordClient;
-    private FileConfiguration config;
     private final TemplateRepository templateRepository;
 
-    public ReportListener(FileConfiguration config, TemplateRepository templateRepository) {
-        this.config = config;
+    public ReportListener(TemplateRepository templateRepository) {
         this.templateRepository = templateRepository;
     }
 
     public void init() {
-        String reportWebhookUrl = config.getString("StaffPlusPlusDiscord.reports.webhookUrl");
-        String playerReportWebhookUrl = config.getString("StaffPlusPlusDiscord.reports.playerReportsWebhookUrl", null);
+        String reportWebhookUrl = reportsWebhookUrl;
+        String playerReportWebhookUrl = playerReportsWebhookUrl;
 
         reportDiscordClient = Feign.builder()
                 .client(new OkHttpClient())
@@ -62,7 +79,7 @@ public class ReportListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleCreateReport(CreateReportEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.reports.notifyOpen")) {
+        if (!notifyOpen) {
             return;
         }
 
@@ -71,7 +88,7 @@ public class ReportListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleReopenReport(ReopenReportEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.reports.notifyReopen")) {
+        if (!notifyReopen) {
             return;
         }
 
@@ -81,7 +98,7 @@ public class ReportListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleAcceptReport(AcceptReportEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.reports.notifyAccept")) {
+        if (!notifyAccept) {
             return;
         }
 
@@ -91,7 +108,7 @@ public class ReportListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleRejectReport(RejectReportEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.reports.notifyReject")) {
+        if (!notifyReject) {
             return;
         }
 
@@ -100,7 +117,7 @@ public class ReportListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleResolveReport(ResolveReportEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.reports.notifyResolve")) {
+        if (!notifyResolve) {
             return;
         }
 
@@ -124,15 +141,13 @@ public class ReportListener implements StaffPlusPlusListener {
     }
 
     public boolean isEnabled() {
-        return config.getBoolean("StaffPlusPlusDiscord.reports.notifyOpen") ||
-                config.getBoolean("StaffPlusPlusDiscord.reports.notifyReopen") ||
-                config.getBoolean("StaffPlusPlusDiscord.reports.notifyAccept") ||
-                config.getBoolean("StaffPlusPlusDiscord.reports.notifyReject") ||
-                config.getBoolean("StaffPlusPlusDiscord.reports.notifyResolve");
+        return notifyOpen || notifyReopen || notifyAccept || notifyReject || notifyResolve;
     }
 
     @Override
-    public boolean isValid() {
-        return StringUtils.isNotBlank(config.getString("StaffPlusPlusDiscord.reports.webhookUrl"));
+    public void validate() {
+        if (isEnabled() && StringUtils.isBlank(reportsWebhookUrl)) {
+            throw new RuntimeException("No reports webhookUrl provided in the configuration.");
+        }
     }
 }

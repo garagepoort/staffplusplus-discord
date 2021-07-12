@@ -1,6 +1,9 @@
 package be.garagepoort.staffplusplus.discord.ban;
 
-import be.garagepoort.staffplusplus.discord.StaffPlusPlusListener;
+import be.garagepoort.mcioc.IocBean;
+import be.garagepoort.mcioc.IocMultiProvider;
+import be.garagepoort.mcioc.configuration.ConfigProperty;
+import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
 import be.garagepoort.staffplusplus.discord.common.JexlTemplateParser;
@@ -17,7 +20,6 @@ import net.shortninja.staffplusplus.ban.UnbanEvent;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
@@ -25,14 +27,21 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+@IocBean
+@IocMultiProvider(StaffPlusPlusListener.class)
 public class BanListener implements StaffPlusPlusListener {
 
+    @ConfigProperty("StaffPlusPlusDiscord.bans.webhookUrl")
+    private String webhookUrl;
+    @ConfigProperty("StaffPlusPlusDiscord.bans.ban")
+    private boolean notifyBan;
+    @ConfigProperty("StaffPlusPlusDiscord.bans.unban")
+    private boolean notifyUnban;
+
     private DiscordClient discordClient;
-    private FileConfiguration config;
     private final TemplateRepository templateRepository;
 
-    public BanListener(FileConfiguration config, TemplateRepository templateRepository)  {
-        this.config = config;
+    public BanListener(TemplateRepository templateRepository)  {
         this.templateRepository = templateRepository;
     }
 
@@ -43,12 +52,12 @@ public class BanListener implements StaffPlusPlusListener {
             .decoder(new GsonDecoder())
             .logger(new Slf4jLogger(DiscordClient.class))
             .logLevel(Logger.Level.FULL)
-            .target(DiscordClient.class, config.getString("StaffPlusPlusDiscord.bans.webhookUrl", ""));
+            .target(DiscordClient.class, webhookUrl);
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleBanEvent(BanEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.bans.ban")) {
+        if (!notifyBan) {
             return;
         }
 
@@ -57,7 +66,7 @@ public class BanListener implements StaffPlusPlusListener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleUnbanEvent(UnbanEvent event) {
-        if (!config.getBoolean("StaffPlusPlusDiscord.bans.unban")) {
+        if (!notifyUnban) {
             return;
         }
 
@@ -74,12 +83,13 @@ public class BanListener implements StaffPlusPlusListener {
     }
 
     public boolean isEnabled() {
-        return config.getBoolean("StaffPlusPlusDiscord.bans.ban") ||
-            config.getBoolean("StaffPlusPlusDiscord.bans.unban");
+        return notifyBan || notifyUnban;
     }
 
     @Override
-    public boolean isValid() {
-        return StringUtils.isNotBlank(config.getString("StaffPlusPlusDiscord.bans.webhookUrl"));
+    public void validate() {
+        if(isEnabled() && StringUtils.isBlank(webhookUrl)) {
+            throw new RuntimeException("No bans webhookUrl provided in the configuration.");
+        }
     }
 }

@@ -1,6 +1,10 @@
 package be.garagepoort.staffplusplus.discord.xray;
 
-import be.garagepoort.staffplusplus.discord.StaffPlusPlusListener;
+import be.garagepoort.mcioc.IocBean;
+import be.garagepoort.mcioc.IocMultiProvider;
+import be.garagepoort.mcioc.configuration.ConfigProperty;
+import be.garagepoort.mcioc.configuration.ConfigTransformer;
+import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
 import be.garagepoort.staffplusplus.discord.common.JexlTemplateParser;
@@ -16,46 +20,47 @@ import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@IocBean
+@IocMultiProvider(StaffPlusPlusListener.class)
 public class XrayListener implements StaffPlusPlusListener {
 
-    private DiscordClient discordClient;
-    private FileConfiguration config;
-    private final TemplateRepository templateRepository;
-    private List<String> enabledOres;
+    @ConfigProperty("StaffPlusPlusDiscord.xray.webhookUrl")
+    private String webhookUrl;
+    @ConfigProperty("StaffPlusPlusDiscord.xray.enabledOres")
+    @ConfigTransformer(OresTransformer.class)
+    private List<String> enabledOres = new ArrayList<>();
 
-    public XrayListener(FileConfiguration config, TemplateRepository templateRepository)  {
-        this.config = config;
+    private DiscordClient discordClient;
+    private final TemplateRepository templateRepository;
+
+    public XrayListener(TemplateRepository templateRepository) {
         this.templateRepository = templateRepository;
     }
 
     public void init() {
-        enabledOres = Arrays.stream(config.getString("StaffPlusPlusDiscord.xray.enabledOres", "").split(";"))
-            .collect(Collectors.toList());
 
         discordClient = Feign.builder()
-            .client(new OkHttpClient())
-            .encoder(new GsonEncoder())
-            .decoder(new GsonDecoder())
-            .logger(new Slf4jLogger(DiscordClient.class))
-            .logLevel(Logger.Level.FULL)
-            .target(DiscordClient.class, config.getString("StaffPlusPlusDiscord.xray.webhookUrl", ""));
+                .client(new OkHttpClient())
+                .encoder(new GsonEncoder())
+                .decoder(new GsonDecoder())
+                .logger(new Slf4jLogger(DiscordClient.class))
+                .logLevel(Logger.Level.FULL)
+                .target(DiscordClient.class, webhookUrl);
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handlePhraseDetectedEvent(XrayEvent event) {
         Material material = event.getType();
-        if(enabledOres.contains(material.name())) {
-           buildXray(event, "xray/xray");
+        if (enabledOres.contains(material.name())) {
+            buildXray(event, "xray/xray");
         }
     }
 
@@ -70,11 +75,13 @@ public class XrayListener implements StaffPlusPlusListener {
     }
 
     public boolean isEnabled() {
-        String ores = config.getString("StaffPlusPlusDiscord.xray.enabledOres");
-        return ores != null && !ores.isEmpty();
+        return enabledOres != null && !enabledOres.isEmpty();
     }
+
     @Override
-    public boolean isValid() {
-        return StringUtils.isNotBlank(config.getString("StaffPlusPlusDiscord.xray.webhookUrl"));
+    public void validate() {
+        if (isEnabled() && StringUtils.isBlank(webhookUrl)) {
+            throw new RuntimeException("No xray webhookUrl provided in the configuration.");
+        }
     }
 }

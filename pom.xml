@@ -62,6 +62,11 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.30</version>
         </dependency>
+        <dependency>
+            <groupId>be.garagepoort.mcioc</groupId>
+            <artifactId>tubing</artifactId>
+            <version>2.3.2</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -145,6 +150,16 @@
                                     </excludes>
                                 </filter>
                             </filters>
+                            <relocations>
+                                <relocation>
+                                    <pattern>be.garagepoort.mcioc.</pattern>
+                                    <shadedPattern>be.garagepoort.staffplusplus.discord.be.garagepoort.mcioc.</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.github.openfeign.</pattern>
+                                    <shadedPattern>be.garagepoort.staffplusplus.discord.io.github.openfeign.</shadedPattern>
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>
@@ -154,9 +169,9 @@
 
     <distributionManagement>
         <repository>
-            <id>nexus-staffplusplus</id>
-            <name>Staff++ Nexus Repo</name>
-            <url>http://staffplusplus.org:8081/repository/staffplusplus</url>
+            <id>repsy-staffplusplus</id>
+            <name>Staff++ Repsy Repo</name>
+            <url>https://repo.repsy.io/mvn/garagepoort/staffplusplus</url>
         </repository>
     </distributionManagement>
 
