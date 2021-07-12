@@ -1,12 +1,13 @@
-package be.garagepoort.staffplusplus.discord.common;
+package be.garagepoort.staffplusplus.discord.common.templates;
 
 import be.garagepoort.mcioc.IocBean;
 import be.garagepoort.staffplusplus.discord.StaffPlusPlusConfiguration;
+import be.garagepoort.staffplusplus.discord.common.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static be.garagepoort.staffplusplus.discord.common.TemplateResourceUtil.getFullTemplatePath;
+import static be.garagepoort.staffplusplus.discord.common.templates.TemplateResourceUtil.getFullTemplatePath;
 import static java.util.Arrays.stream;
 
 @IocBean

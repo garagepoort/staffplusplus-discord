@@ -1,5 +1,6 @@
-package be.garagepoort.staffplusplus.discord.common;
+package be.garagepoort.staffplusplus.discord.common.templates;
 
+import be.garagepoort.staffplusplus.discord.common.JavaUtils;
 import net.shortninja.staffplusplus.ILocation;
 import org.bukkit.Location;
 

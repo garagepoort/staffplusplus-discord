@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord.chat;
+package be.garagepoort.staffplusplus.discord.domain.staffmode;
 
 import be.garagepoort.mcioc.IocBean;
 import be.garagepoort.mcioc.IocMultiProvider;
@@ -6,18 +6,20 @@ import be.garagepoort.mcioc.configuration.ConfigProperty;
 import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
-import be.garagepoort.staffplusplus.discord.common.JexlTemplateParser;
-import be.garagepoort.staffplusplus.discord.common.TemplateRepository;
+import be.garagepoort.staffplusplus.discord.common.templates.JexlTemplateParser;
+import be.garagepoort.staffplusplus.discord.common.templates.TemplateRepository;
 import feign.Feign;
 import feign.Logger;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
 import feign.okhttp.OkHttpClient;
 import feign.slf4j.Slf4jLogger;
-import net.shortninja.staffplusplus.chat.PhrasesDetectedEvent;
+import net.shortninja.staffplusplus.staffmode.EnterStaffModeEvent;
+import net.shortninja.staffplusplus.staffmode.ExitStaffModeEvent;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
@@ -26,17 +28,19 @@ import java.time.format.DateTimeFormatter;
 
 @IocBean
 @IocMultiProvider(StaffPlusPlusListener.class)
-public class ChatListener implements StaffPlusPlusListener {
+public class StaffModeListener implements StaffPlusPlusListener {
 
-    @ConfigProperty("StaffPlusPlusDiscord.chat.webhookUrl")
+    @ConfigProperty("StaffPlusPlusDiscord.staffmode.webhookUrl")
     private String webhookUrl;
-    @ConfigProperty("StaffPlusPlusDiscord.chat.phrase-detection")
-    private boolean notifyPhraseDetection;
+    @ConfigProperty("StaffPlusPlusDiscord.staffmode.notify-enter")
+    private boolean notifyEnter;
+    @ConfigProperty("StaffPlusPlusDiscord.staffmode.notify-exit")
+    private boolean notifyExit;
 
     private DiscordClient discordClient;
     private final TemplateRepository templateRepository;
 
-    public ChatListener(TemplateRepository templateRepository)  {
+    public StaffModeListener(TemplateRepository templateRepository)  {
         this.templateRepository = templateRepository;
     }
 
@@ -51,33 +55,38 @@ public class ChatListener implements StaffPlusPlusListener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
-    public void handlePhraseDetectedEvent(PhrasesDetectedEvent event) {
-        if (!notifyPhraseDetection) {
+    public void handEnterStaffMode(EnterStaffModeEvent event) {
+        if(!notifyEnter) {
             return;
         }
-
-        buildPhraseDetected(event, "chat/chat-phrase-detected");
+        buildEnterStaffModeResult(event, "staffmode/enter-staffmode");
     }
 
-    private void buildPhraseDetected(PhrasesDetectedEvent detectedEvent, String templateFile) {
-        String time = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void handEnterStaffMode(ExitStaffModeEvent event) {
+        if(!notifyExit) {
+            return;
+        }
+        buildEnterStaffModeResult(event, "staffmode/exit-staffmode");
+    }
 
+    private void buildEnterStaffModeResult(Event event, String templateFile) {
+        String time = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         JexlContext jc = new MapContext();
-        jc.set("detectedEvent", detectedEvent);
+        jc.set("staffmodeEvent", event);
         jc.set("timestamp", time);
-        jc.set("detectedPhrases", String.join(" | ", detectedEvent.getDetectedPhrases()));
         String template = JexlTemplateParser.parse(templateRepository.getTemplate(templateFile), jc);
         DiscordUtil.sendEvent(discordClient, template);
     }
 
     public boolean isEnabled() {
-        return notifyPhraseDetection;
+        return notifyEnter || notifyExit;
     }
 
     @Override
     public void validate() {
         if (isEnabled() && StringUtils.isBlank(webhookUrl)) {
-            throw new RuntimeException("No chat webhookUrl provided in the configuration.");
+            throw new RuntimeException("No staffmode webhookUrl provided in the configuration.");
         }
     }
 }

@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord.staffchat;
+package be.garagepoort.staffplusplus.discord.domain.staffchat;
 
 import be.garagepoort.staffplusplus.discord.StaffPlusPlusDiscord;
 import github.scarsz.discordsrv.DiscordSRV;

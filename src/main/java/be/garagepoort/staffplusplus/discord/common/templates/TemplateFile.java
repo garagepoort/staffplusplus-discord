@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord.common;
+package be.garagepoort.staffplusplus.discord.common.templates;
 
 import static java.io.File.separator;
 

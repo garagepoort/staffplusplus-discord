@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord.staffmode;
+package be.garagepoort.staffplusplus.discord.domain.staffmode;
 
 import be.garagepoort.mcioc.IocBean;
 import be.garagepoort.mcioc.configuration.ConfigProperty;

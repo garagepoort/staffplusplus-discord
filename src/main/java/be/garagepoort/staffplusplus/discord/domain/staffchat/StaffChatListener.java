@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord.staffchat;
+package be.garagepoort.staffplusplus.discord.domain.staffchat;
 
 import be.garagepoort.mcioc.IocBean;
 import be.garagepoort.mcioc.IocMultiProvider;

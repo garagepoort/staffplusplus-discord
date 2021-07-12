@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord.xray;
+package be.garagepoort.staffplusplus.discord.domain.xray;
 
 import be.garagepoort.mcioc.configuration.IConfigTransformer;
 import org.apache.commons.lang.StringUtils;

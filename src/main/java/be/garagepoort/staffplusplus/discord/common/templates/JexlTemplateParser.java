@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord.common;
+package be.garagepoort.staffplusplus.discord.common.templates;
 
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;

@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord.common;
+package be.garagepoort.staffplusplus.discord.common.templates;
 
 import be.garagepoort.staffplusplus.discord.StaffPlusPlusDiscord;
 import org.jetbrains.annotations.NotNull;
@@ -11,14 +11,14 @@ import java.util.logging.Logger;
 
 import static java.io.File.separator;
 
-class TemplateResourceUtil {
+public class TemplateResourceUtil {
     private static final String DISCORDTEMPLATES_DIR = "discordtemplates";
 
     private static final Logger logger = StaffPlusPlusDiscord.get().getLogger();
 
     private TemplateResourceUtil() {}
 
-    static void saveTemplate(String templatePack, String templateFilePath, boolean replace) {
+    public static void saveTemplate(String templatePack, String templateFilePath, boolean replace) {
         File dataFolder = StaffPlusPlusDiscord.get().getDataFolder();
         String fullTemplatePath = (DISCORDTEMPLATES_DIR + separator + templatePack + separator + templateFilePath).replace('\\', '/');
         String fullDefaultTemplatePath = (DISCORDTEMPLATES_DIR + separator + "default" + separator + templateFilePath).replace('\\', '/');
@@ -71,7 +71,7 @@ class TemplateResourceUtil {
         }
     }
 
-    static String getFullTemplatePath(String templatePack, TemplateFile templateFile) {
+    public static String getFullTemplatePath(String templatePack, TemplateFile templateFile) {
         return StaffPlusPlusDiscord.get().getDataFolder() + separator + DISCORDTEMPLATES_DIR + separator + templatePack + separator + templateFile.getFilePath();
     }
 }

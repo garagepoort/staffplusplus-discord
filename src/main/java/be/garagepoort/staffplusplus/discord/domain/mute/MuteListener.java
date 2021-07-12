@@ -1,52 +1,51 @@
-package be.garagepoort.staffplusplus.discord.xray;
+package be.garagepoort.staffplusplus.discord.domain.mute;
 
 import be.garagepoort.mcioc.IocBean;
 import be.garagepoort.mcioc.IocMultiProvider;
 import be.garagepoort.mcioc.configuration.ConfigProperty;
-import be.garagepoort.mcioc.configuration.ConfigTransformer;
 import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
-import be.garagepoort.staffplusplus.discord.common.JexlTemplateParser;
-import be.garagepoort.staffplusplus.discord.common.TemplateRepository;
+import be.garagepoort.staffplusplus.discord.common.templates.JexlTemplateParser;
+import be.garagepoort.staffplusplus.discord.common.templates.TemplateRepository;
 import feign.Feign;
 import feign.Logger;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
 import feign.okhttp.OkHttpClient;
 import feign.slf4j.Slf4jLogger;
-import net.shortninja.staffplusplus.xray.XrayEvent;
+import net.shortninja.staffplusplus.mute.IMute;
+import net.shortninja.staffplusplus.mute.MuteEvent;
+import net.shortninja.staffplusplus.mute.UnmuteEvent;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 @IocBean
 @IocMultiProvider(StaffPlusPlusListener.class)
-public class XrayListener implements StaffPlusPlusListener {
+public class MuteListener implements StaffPlusPlusListener {
 
-    @ConfigProperty("StaffPlusPlusDiscord.xray.webhookUrl")
+    @ConfigProperty("StaffPlusPlusDiscord.mutes.webhookUrl")
     private String webhookUrl;
-    @ConfigProperty("StaffPlusPlusDiscord.xray.enabledOres")
-    @ConfigTransformer(OresTransformer.class)
-    private List<String> enabledOres = new ArrayList<>();
+    @ConfigProperty("StaffPlusPlusDiscord.mutes.mute")
+    private boolean notifyMute;
+    @ConfigProperty("StaffPlusPlusDiscord.mutes.unmute")
+    private boolean notifyUnmute;
 
     private DiscordClient discordClient;
     private final TemplateRepository templateRepository;
 
-    public XrayListener(TemplateRepository templateRepository) {
+    public MuteListener(TemplateRepository templateRepository) {
         this.templateRepository = templateRepository;
     }
 
     public void init() {
-
         discordClient = Feign.builder()
                 .client(new OkHttpClient())
                 .encoder(new GsonEncoder())
@@ -57,31 +56,42 @@ public class XrayListener implements StaffPlusPlusListener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
-    public void handlePhraseDetectedEvent(XrayEvent event) {
-        Material material = event.getType();
-        if (enabledOres.contains(material.name())) {
-            buildXray(event, "xray/xray");
+    public void handleMuteEvent(MuteEvent event) {
+        if (!notifyMute) {
+            return;
         }
+
+        IMute mute = event.getMute();
+        buildMute(mute, "mutes/muted");
     }
 
-    private void buildXray(XrayEvent event, String templateFile) {
-        String time = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void handleUnmuteEvent(UnmuteEvent event) {
+        if (!notifyUnmute) {
+            return;
+        }
 
+        buildMute(event.getMute(), "mutes/unmuted");
+    }
+
+    private void buildMute(IMute mute, String templateFile) {
+
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(mute.getCreationDate().toInstant(), ZoneOffset.UTC);
         JexlContext jc = new MapContext();
-        jc.set("xrayEvent", event);
-        jc.set("timestamp", time);
+        jc.set("mute", mute);
+        jc.set("timestamp", localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         String template = JexlTemplateParser.parse(templateRepository.getTemplate(templateFile), jc);
         DiscordUtil.sendEvent(discordClient, template);
     }
 
     public boolean isEnabled() {
-        return enabledOres != null && !enabledOres.isEmpty();
+        return notifyMute || notifyUnmute;
     }
 
     @Override
     public void validate() {
         if (isEnabled() && StringUtils.isBlank(webhookUrl)) {
-            throw new RuntimeException("No xray webhookUrl provided in the configuration.");
+            throw new RuntimeException("No mute webhookUrl provided in the configuration.");
         }
     }
 }

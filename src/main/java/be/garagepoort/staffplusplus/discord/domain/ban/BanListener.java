@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord.ban;
+package be.garagepoort.staffplusplus.discord.domain.ban;
 
 import be.garagepoort.mcioc.IocBean;
 import be.garagepoort.mcioc.IocMultiProvider;
@@ -6,8 +6,8 @@ import be.garagepoort.mcioc.configuration.ConfigProperty;
 import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
-import be.garagepoort.staffplusplus.discord.common.JexlTemplateParser;
-import be.garagepoort.staffplusplus.discord.common.TemplateRepository;
+import be.garagepoort.staffplusplus.discord.common.templates.JexlTemplateParser;
+import be.garagepoort.staffplusplus.discord.common.templates.TemplateRepository;
 import feign.Feign;
 import feign.Logger;
 import feign.gson.GsonDecoder;

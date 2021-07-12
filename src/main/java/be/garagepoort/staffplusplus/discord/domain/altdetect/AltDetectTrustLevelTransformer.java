@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord.altdetect;
+package be.garagepoort.staffplusplus.discord.domain.altdetect;
 
 import be.garagepoort.mcioc.configuration.IConfigTransformer;
 import net.shortninja.staffplusplus.altdetect.AltDetectTrustLevel;

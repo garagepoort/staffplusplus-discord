@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord.mute;
+package be.garagepoort.staffplusplus.discord.domain.kick;
 
 import be.garagepoort.mcioc.IocBean;
 import be.garagepoort.mcioc.IocMultiProvider;
@@ -6,17 +6,16 @@ import be.garagepoort.mcioc.configuration.ConfigProperty;
 import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
-import be.garagepoort.staffplusplus.discord.common.JexlTemplateParser;
-import be.garagepoort.staffplusplus.discord.common.TemplateRepository;
+import be.garagepoort.staffplusplus.discord.common.templates.JexlTemplateParser;
+import be.garagepoort.staffplusplus.discord.common.templates.TemplateRepository;
 import feign.Feign;
 import feign.Logger;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
 import feign.okhttp.OkHttpClient;
 import feign.slf4j.Slf4jLogger;
-import net.shortninja.staffplusplus.mute.IMute;
-import net.shortninja.staffplusplus.mute.MuteEvent;
-import net.shortninja.staffplusplus.mute.UnmuteEvent;
+import net.shortninja.staffplusplus.kick.IKick;
+import net.shortninja.staffplusplus.kick.KickEvent;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang.StringUtils;
@@ -29,19 +28,17 @@ import java.time.format.DateTimeFormatter;
 
 @IocBean
 @IocMultiProvider(StaffPlusPlusListener.class)
-public class MuteListener implements StaffPlusPlusListener {
+public class KickListener implements StaffPlusPlusListener {
 
-    @ConfigProperty("StaffPlusPlusDiscord.mutes.webhookUrl")
+    @ConfigProperty("StaffPlusPlusDiscord.kicks.webhookUrl")
     private String webhookUrl;
-    @ConfigProperty("StaffPlusPlusDiscord.mutes.mute")
-    private boolean notifyMute;
-    @ConfigProperty("StaffPlusPlusDiscord.mutes.unmute")
-    private boolean notifyUnmute;
+    @ConfigProperty("StaffPlusPlusDiscord.kicks.kick")
+    private boolean notifyKick;
 
     private DiscordClient discordClient;
     private final TemplateRepository templateRepository;
 
-    public MuteListener(TemplateRepository templateRepository) {
+    public KickListener(TemplateRepository templateRepository) {
         this.templateRepository = templateRepository;
     }
 
@@ -56,42 +53,33 @@ public class MuteListener implements StaffPlusPlusListener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
-    public void handleMuteEvent(MuteEvent event) {
-        if (!notifyMute) {
+    public void handleKickEvent(KickEvent event) {
+        if (!notifyKick) {
             return;
         }
 
-        IMute mute = event.getMute();
-        buildMute(mute, "mutes/muted");
+        buildKick(event.getKick(), "kicks/kicked");
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void handleUnmuteEvent(UnmuteEvent event) {
-        if (!notifyUnmute) {
-            return;
-        }
+    private void buildKick(IKick kick, String templateFile) {
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(kick.getCreationDate().toInstant(), ZoneOffset.UTC);
+        String time = localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
-        buildMute(event.getMute(), "mutes/unmuted");
-    }
-
-    private void buildMute(IMute mute, String templateFile) {
-
-        LocalDateTime localDateTime = LocalDateTime.ofInstant(mute.getCreationDate().toInstant(), ZoneOffset.UTC);
         JexlContext jc = new MapContext();
-        jc.set("mute", mute);
-        jc.set("timestamp", localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        jc.set("kick", kick);
+        jc.set("timestamp", time);
         String template = JexlTemplateParser.parse(templateRepository.getTemplate(templateFile), jc);
         DiscordUtil.sendEvent(discordClient, template);
     }
 
     public boolean isEnabled() {
-        return notifyMute || notifyUnmute;
+        return notifyKick;
     }
 
     @Override
     public void validate() {
         if (isEnabled() && StringUtils.isBlank(webhookUrl)) {
-            throw new RuntimeException("No mute webhookUrl provided in the configuration.");
+            throw new RuntimeException("No kick webhookUrl provided in the configuration.");
         }
     }
 }
