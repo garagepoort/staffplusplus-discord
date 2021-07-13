@@ -28,6 +28,8 @@ public class TemplateRepository {
         new TemplateFile("appeals", "appeal-rejected"),
         new TemplateFile("bans", "banned"),
         new TemplateFile("bans", "unbanned"),
+        new TemplateFile("bans", "ip-banned"),
+        new TemplateFile("bans", "ip-unbanned"),
         new TemplateFile("mutes", "muted"),
         new TemplateFile("mutes", "unmuted"),
         new TemplateFile("kicks", "kicked"),
