@@ -1,0 +1,43 @@
+// Context:
+// investigation: IInvestigation => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/investigate/IInvestigation.java
+// note: IInvestigationNote => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/investigate/IInvestigationNote.java
+// timestamp: String
+{
+    "content": "Investigation update from Staff++",
+    "embeds": [
+        {
+            "title": "Investigation(ID=${investigation.id}) note created",
+            "url": "https://www.spigotmc.org/resources/staff.83562/",
+            "color": "5027875",
+            "timestamp": "${timestamp}",
+            "footer": {
+                "text": "Provided by Staff++",
+                "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
+            },
+            "fields": [
+                {
+                    "name": "Investigator",
+                    "value": "${investigation.investigatorName}\n[${investigation.investigatorUuid}]",
+                    "inline": true
+                }
+                #IF investigation.investigatedName.isPresent()
+                ,{
+                    "name": "Under investigation:",
+                    "value": "${investigation.investigatedName.get()}\n[${investigation.investigatedUuid.get()}]",
+                    "inline": true
+                }
+                #ENDIF,
+                ,{
+                    "name": "Note created by",
+                    "value": "${note.notedByName}\n[${note.notedByUuid}]",
+                    "inline": true
+                }
+                ,{
+                    "name": "Note",
+                    "value": "```${note.note}```",
+                    "inline": false
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,32 @@
+// Context:
+// investigation: IInvestigation => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/investigate/IInvestigation.java
+// timestamp: String
+{
+    "content": "Investigation update from Staff++",
+    "embeds": [
+        {
+            "title": "Investigation(ID=${investigation.id}) started${investigation.investigatedName.isPresent() ? ': ' + investigation.investigatedName.get() : ''}",
+            "url": "https://www.spigotmc.org/resources/staff.83562/",
+            "color": "16620323",
+            "timestamp": "${timestamp}",
+            "footer": {
+                "text": "Provided by Staff++",
+                "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
+            },
+            "fields": [
+                {
+                    "name": "Investigator",
+                    "value": "${investigation.investigatorName}\n[${investigation.investigatorUuid}]",
+                    "inline": true
+                }
+                #IF investigation.investigatedName.isPresent()
+                ,{
+                    "name": "Under investigation:",
+                    "value": "${investigation.investigatedName.get()}\n[${investigation.investigatedUuid.get()}]",
+                    "inline": true
+                }
+                #ENDIF
+            ]
+        }
+    ]
+}

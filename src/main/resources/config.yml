@@ -62,6 +62,11 @@ StaffPlusPlusDiscord:
         notify-enter: false
         # Trigger a discord message whenever a staffmember enters staffmode
         notify-exit: false
+    investigations:
+        webhookUrl: ""
+        notify-start: false
+        notify-conclude: false
+        notify-note-created: false
     chat:
         webhookUrl: ""
         # Trigger a discord message whenever a a player sends a chat message containing predefined words/phrases
