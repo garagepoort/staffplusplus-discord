@@ -32,10 +32,8 @@ public class StaffChatListener implements StaffPlusPlusListener {
     }
 
     public void init() {
-        if (staffPlusPlusDiscord.getServer().getPluginManager().isPluginEnabled("DiscordSRV")) {
-            discordListener = new DiscordStaffChatListener(staffPlusPlusDiscord, staffPlus);
-            DiscordSRV.api.subscribe(discordListener);
-        }
+        discordListener = new DiscordStaffChatListener(staffPlusPlusDiscord, staffPlus);
+        DiscordSRV.api.subscribe(discordListener);
     }
 
     @Override
@@ -51,9 +49,11 @@ public class StaffChatListener implements StaffPlusPlusListener {
             return;
         }
         // Send to discord off the main thread (just like DiscordSRV does)
-        staffPlusPlusDiscord.getServer().getScheduler().runTaskAsynchronously(staffPlusPlusDiscord, () ->
-            DiscordSRV.getPlugin().processChatMessage(event.getPlayer(), event.getMessage(), DiscordStaffChatListener.CHANNEL_PREFIX + event.getChannel(), false)
-        );
+        if (staffPlusPlusDiscord.getServer().getPluginManager().isPluginEnabled("DiscordSRV")) {
+            staffPlusPlusDiscord.getServer().getScheduler().runTaskAsynchronously(staffPlusPlusDiscord, () ->
+                    DiscordSRV.getPlugin().processChatMessage(event.getPlayer(), event.getMessage(), DiscordStaffChatListener.CHANNEL_PREFIX + event.getChannel(), false)
+            );
+        }
     }
 
     @Override
@@ -63,9 +63,5 @@ public class StaffChatListener implements StaffPlusPlusListener {
 
     @Override
     public void validate() {
-        boolean discordSRVEnabled = staffPlusPlusDiscord.getServer().getPluginManager().isPluginEnabled("DiscordSRV");
-        if(isEnabled() && !discordSRVEnabled) {
-            throw new RuntimeException("DiscordSRV plugin not enabled! Disable Staffchat sync or enable the DiscordSRV plugin.");
-        }
     }
 }
