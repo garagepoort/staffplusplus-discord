@@ -33,6 +33,8 @@ StaffPlusPlusDiscord:
         webhookUrl: ""
         ban: false
         unban: false
+        extension: false
+        reduction: false
     ipbans:
         webhookUrl: ""
         ban: false

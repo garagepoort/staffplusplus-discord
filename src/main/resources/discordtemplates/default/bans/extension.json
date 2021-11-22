@@ -1,0 +1,52 @@
+// Context:
+// ban: IBan => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/bans/IBan.java
+// timestamp: String
+// extensionExecutor: Player that extended the ban
+// extensionDuration: Human readable duration of the ban extension
+{
+    "content": "Ban update from Staff++",
+    "embeds": [
+        {
+            "title": "User ban has been extended: ${ban.targetName}",
+            "url": "https://www.spigotmc.org/resources/staff.83562/",
+            "color": "16601379",
+            "timestamp": "${timestamp}",
+            "footer": {
+                "text": "Provided by Staff++",
+                "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
+            },
+            "fields": [
+                {
+                    "name": "Extended by",
+                    "value": "${extensionExecutor.name}\n[${extensionExecutor.uniqueId}]",
+                    "inline": true
+                },
+                {
+                    "name": "Banned:",
+                    "value": "${ban.targetName}\n[${ban.targetUuid}]",
+                    "inline": true
+                },
+                {
+                    "name": "Type",
+                    "value": "TEMPORARY",
+                    "inline": false
+                },
+                {
+                    "name": "Ends at: ",
+                    "value": "${utils:parseTime(ban.endDate)}",
+                    "inline": true
+                },
+                {
+                    "name": "Ban extended with: ",
+                    "value": "${extensionDuration}",
+                    "inline": false
+                },
+                {
+                    "name": "Ban Reason",
+                    "value": "```${ban.reason}```",
+                    "inline": false
+                }
+            ]
+        }
+    ]
+}
