@@ -28,7 +28,7 @@
         <dependency>
             <groupId>net.shortninja.staffplus</groupId>
             <artifactId>staffplusplus-api</artifactId>
-            <version>4.0.0</version>
+            <version>4.3.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -65,28 +65,14 @@
         <dependency>
             <groupId>be.garagepoort.mcioc</groupId>
             <artifactId>tubing</artifactId>
-            <version>2.3.2</version>
+            <version>4.0.3</version>
         </dependency>
     </dependencies>
 
     <repositories>
         <repository>
-            <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-        </repository>
-        <repository>
-            <id>repsy</id>
-            <name>Spigot-server-deps</name>
-            <url>https://repo.repsy.io/mvn/garagepoort/spigot</url>
-        </repository>
-        <repository>
-            <id>repsy-staffplusplus</id>
-            <name>staffplusplus-deps</name>
-            <url>https://repo.repsy.io/mvn/garagepoort/staffplusplus</url>
-        </repository>
-        <repository>
-            <id>scarsz-nexus</id>
-            <url>https://nexus.scarsz.me/content/repositories/public/</url>
+            <id>staffplusplus-repo</id>
+            <url>https://nexus.staffplusplus.org/repository/staffplusplus/</url>
         </repository>
     </repositories>
 
@@ -164,9 +150,9 @@
 
     <distributionManagement>
         <repository>
-            <id>repsy-staffplusplus</id>
-            <name>Staff++ Repsy Repo</name>
-            <url>https://repo.repsy.io/mvn/garagepoort/staffplusplus</url>
+            <id>staffplusplus-repo</id>
+            <name>Central Repository StaffPlusPlus</name>
+            <url>https://nexus.staffplusplus.org/repository/maven-releases/</url>
         </repository>
     </distributionManagement>
 
