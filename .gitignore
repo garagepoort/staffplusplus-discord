@@ -3,3 +3,4 @@ target/
 lib/
 out/
 *.iml
+dependency-reduced-pom.xml
