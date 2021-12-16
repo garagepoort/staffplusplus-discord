@@ -3,21 +3,18 @@ package be.garagepoort.staffplusplus.discord.domain.chat;
 import be.garagepoort.mcioc.IocBean;
 import be.garagepoort.mcioc.IocMultiProvider;
 import be.garagepoort.mcioc.configuration.ConfigProperty;
-import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
+import be.garagepoort.mcioc.configuration.ConfigTransformer;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
+import be.garagepoort.staffplusplus.discord.api.DiscordClientBuilder;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
+import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
+import be.garagepoort.staffplusplus.discord.common.config.WebhookConfig;
+import be.garagepoort.staffplusplus.discord.common.config.WebhookConfigTransformer;
 import be.garagepoort.staffplusplus.discord.common.templates.JexlTemplateParser;
 import be.garagepoort.staffplusplus.discord.common.templates.TemplateRepository;
-import feign.Feign;
-import feign.Logger;
-import feign.gson.GsonDecoder;
-import feign.gson.GsonEncoder;
-import feign.okhttp.OkHttpClient;
-import feign.slf4j.Slf4jLogger;
 import net.shortninja.staffplusplus.chat.PhrasesDetectedEvent;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
@@ -29,25 +26,22 @@ import java.time.format.DateTimeFormatter;
 public class ChatListener implements StaffPlusPlusListener {
 
     @ConfigProperty("StaffPlusPlusDiscord.chat.webhookUrl")
-    private String webhookUrl;
+    @ConfigTransformer(WebhookConfigTransformer.class)
+    private WebhookConfig webhookUrl;
     @ConfigProperty("StaffPlusPlusDiscord.chat.phrase-detection")
     private boolean notifyPhraseDetection;
 
     private DiscordClient discordClient;
     private final TemplateRepository templateRepository;
+    private final DiscordClientBuilder discordClientBuilder;
 
-    public ChatListener(TemplateRepository templateRepository)  {
+    public ChatListener(TemplateRepository templateRepository, DiscordClientBuilder discordClientBuilder)  {
         this.templateRepository = templateRepository;
+        this.discordClientBuilder = discordClientBuilder;
     }
 
     public void init() {
-        discordClient = Feign.builder()
-            .client(new OkHttpClient())
-            .encoder(new GsonEncoder())
-            .decoder(new GsonDecoder())
-            .logger(new Slf4jLogger(DiscordClient.class))
-            .logLevel(Logger.Level.FULL)
-            .target(DiscordClient.class, webhookUrl);
+        discordClient = discordClientBuilder.buildClient(webhookUrl.getHost());
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -67,7 +61,7 @@ public class ChatListener implements StaffPlusPlusListener {
         jc.set("timestamp", time);
         jc.set("detectedPhrases", String.join(" | ", detectedEvent.getDetectedPhrases()));
         String template = JexlTemplateParser.parse(templateRepository.getTemplate(templateFile), jc);
-        DiscordUtil.sendEvent(discordClient, template);
+        DiscordUtil.sendEvent(discordClient, webhookUrl, template);
     }
 
     public boolean isEnabled() {
@@ -76,7 +70,7 @@ public class ChatListener implements StaffPlusPlusListener {
 
     @Override
     public void validate() {
-        if (isEnabled() && StringUtils.isBlank(webhookUrl)) {
+        if (isEnabled() && webhookUrl == null) {
             throw new RuntimeException("No chat webhookUrl provided in the configuration.");
         }
     }

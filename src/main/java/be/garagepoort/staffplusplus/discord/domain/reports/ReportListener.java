@@ -3,21 +3,23 @@ package be.garagepoort.staffplusplus.discord.domain.reports;
 import be.garagepoort.mcioc.IocBean;
 import be.garagepoort.mcioc.IocMultiProvider;
 import be.garagepoort.mcioc.configuration.ConfigProperty;
-import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
+import be.garagepoort.mcioc.configuration.ConfigTransformer;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
+import be.garagepoort.staffplusplus.discord.api.DiscordClientBuilder;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
+import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
+import be.garagepoort.staffplusplus.discord.common.config.WebhookConfig;
+import be.garagepoort.staffplusplus.discord.common.config.WebhookConfigTransformer;
 import be.garagepoort.staffplusplus.discord.common.templates.JexlTemplateParser;
 import be.garagepoort.staffplusplus.discord.common.templates.TemplateRepository;
-import feign.Feign;
-import feign.Logger;
-import feign.gson.GsonDecoder;
-import feign.gson.GsonEncoder;
-import feign.okhttp.OkHttpClient;
-import feign.slf4j.Slf4jLogger;
-import net.shortninja.staffplusplus.reports.*;
+import net.shortninja.staffplusplus.reports.AcceptReportEvent;
+import net.shortninja.staffplusplus.reports.CreateReportEvent;
+import net.shortninja.staffplusplus.reports.IReport;
+import net.shortninja.staffplusplus.reports.RejectReportEvent;
+import net.shortninja.staffplusplus.reports.ReopenReportEvent;
+import net.shortninja.staffplusplus.reports.ResolveReportEvent;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
@@ -30,9 +32,11 @@ import java.time.format.DateTimeFormatter;
 public class ReportListener implements StaffPlusPlusListener {
 
     @ConfigProperty("StaffPlusPlusDiscord.reports.webhookUrl")
-    private String reportsWebhookUrl;
+    @ConfigTransformer(WebhookConfigTransformer.class)
+    private WebhookConfig reportsWebhookUrl;
     @ConfigProperty("StaffPlusPlusDiscord.reports.playerReportsWebhookUrl")
-    private String playerReportsWebhookUrl;
+    @ConfigTransformer(WebhookConfigTransformer.class)
+    private WebhookConfig playerReportsWebhookUrl;
     @ConfigProperty("StaffPlusPlusDiscord.reports.notifyOpen")
     private boolean notifyOpen;
     @ConfigProperty("StaffPlusPlusDiscord.reports.notifyReopen")
@@ -47,33 +51,20 @@ public class ReportListener implements StaffPlusPlusListener {
     private DiscordClient reportDiscordClient;
     private DiscordClient playerReportDiscordClient;
     private final TemplateRepository templateRepository;
+    private final DiscordClientBuilder discordClientBuilder;
 
-    public ReportListener(TemplateRepository templateRepository) {
+    public ReportListener(TemplateRepository templateRepository, DiscordClientBuilder discordClientBuilder) {
         this.templateRepository = templateRepository;
+        this.discordClientBuilder = discordClientBuilder;
     }
 
     public void init() {
-        String reportWebhookUrl = reportsWebhookUrl;
-        String playerReportWebhookUrl = playerReportsWebhookUrl;
-
-        reportDiscordClient = Feign.builder()
-                .client(new OkHttpClient())
-                .encoder(new GsonEncoder())
-                .decoder(new GsonDecoder())
-                .logger(new Slf4jLogger(DiscordClient.class))
-                .logLevel(Logger.Level.FULL)
-                .target(DiscordClient.class, reportWebhookUrl);
-
-        if (StringUtils.isNotEmpty(playerReportWebhookUrl)) {
-            playerReportDiscordClient = Feign.builder()
-                    .client(new OkHttpClient())
-                    .encoder(new GsonEncoder())
-                    .decoder(new GsonDecoder())
-                    .logger(new Slf4jLogger(DiscordClient.class))
-                    .logLevel(Logger.Level.FULL)
-                    .target(DiscordClient.class, playerReportWebhookUrl);
+        reportDiscordClient = discordClientBuilder.buildClient(reportsWebhookUrl.getHost());
+        if (playerReportsWebhookUrl != null) {
+            playerReportDiscordClient = discordClientBuilder.buildClient(playerReportsWebhookUrl.getHost());
         } else {
             playerReportDiscordClient = reportDiscordClient;
+            playerReportsWebhookUrl = reportsWebhookUrl;
         }
     }
 
@@ -95,7 +86,6 @@ public class ReportListener implements StaffPlusPlusListener {
         buildReport(event.getReport(), "reports/report-reopened");
     }
 
-
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleAcceptReport(AcceptReportEvent event) {
         if (!notifyAccept) {
@@ -104,7 +94,6 @@ public class ReportListener implements StaffPlusPlusListener {
 
         buildReport(event.getReport(), "reports/report-accepted");
     }
-
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void handleRejectReport(RejectReportEvent event) {
@@ -127,7 +116,8 @@ public class ReportListener implements StaffPlusPlusListener {
     public void buildReport(IReport report, String key) {
         String createReportTemplate = replaceReportCreatedTemplate(report, templateRepository.getTemplate(key));
         DiscordClient discordClient = report.getCulpritUuid() == null ? this.reportDiscordClient : playerReportDiscordClient;
-        DiscordUtil.sendEvent(discordClient, createReportTemplate);
+        WebhookConfig webhookConfig = report.getCulpritUuid() == null ? this.reportsWebhookUrl : playerReportsWebhookUrl;
+        DiscordUtil.sendEvent(discordClient, webhookConfig, createReportTemplate);
     }
 
     private String replaceReportCreatedTemplate(IReport report, String createReportTemplate) {
@@ -146,7 +136,7 @@ public class ReportListener implements StaffPlusPlusListener {
 
     @Override
     public void validate() {
-        if (isEnabled() && StringUtils.isBlank(reportsWebhookUrl)) {
+        if (isEnabled() && reportsWebhookUrl == null) {
             throw new RuntimeException("No reports webhookUrl provided in the configuration.");
         }
     }

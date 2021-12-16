@@ -38,34 +38,25 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-okhttp</artifactId>
-            <version>11.7</version>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>retrofit</artifactId>
+            <version>2.9.0</version>
         </dependency>
         <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-gson</artifactId>
-            <version>11.7</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-slf4j</artifactId>
-            <version>11.7</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.openfeign.form</groupId>
-            <artifactId>feign-form</artifactId>
-            <version>3.8.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.32</version>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>converter-scalars</artifactId>
+            <version>2.9.0</version>
         </dependency>
         <dependency>
             <groupId>be.garagepoort.mcioc</groupId>
             <artifactId>tubing</artifactId>
-            <version>4.1.0</version>
+            <version>4.1.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -137,16 +128,28 @@
                                     <shadedPattern>be.garagepoort.staffplusplus.discord.be.garagepoort.mcioc.</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>io.github.openfeign.</pattern>
-                                    <shadedPattern>be.garagepoort.staffplusplus.discord.io.github.openfeign.</shadedPattern>
+                                    <pattern>okio</pattern>
+                                    <shadedPattern>be.garagepoort.staffplusplus.discord.okio</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>feign</pattern>
-                                    <shadedPattern>net.shortninja.staffplus.libs.feign</shadedPattern>
+                                    <pattern>okhttp3</pattern>
+                                    <shadedPattern>be.garagepoort.staffplusplus.discord.okhttp3</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>io.github.openfeign.</pattern>
-                                    <shadedPattern>net.shortninja.staffplus.core.io.github.openfeign.</shadedPattern>
+                                    <pattern>com.google.gson</pattern>
+                                    <shadedPattern>be.garagepoort.staffplusplus.discord.com.google.gson</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons.jexl3</pattern>
+                                    <shadedPattern>be.garagepoort.staffplusplus.discord.org.apache.commons.jexl3</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons.logging</pattern>
+                                    <shadedPattern>be.garagepoort.staffplusplus.discord.org.apache.commons.logging</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>retrofit2</pattern>
+                                    <shadedPattern>be.garagepoort.staffplusplus.discord.retrofit2</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
