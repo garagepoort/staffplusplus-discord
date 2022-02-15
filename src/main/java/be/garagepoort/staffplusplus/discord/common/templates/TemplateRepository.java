@@ -45,6 +45,7 @@ public class TemplateRepository {
         new TemplateFile("staffmode", "enter-staffmode"),
         new TemplateFile("staffmode", "exit-staffmode"),
         new TemplateFile("chat", "chat-phrase-detected"),
+        new TemplateFile("commanddetection", "command-detected"),
         new TemplateFile("xray", "xray")
     };
 

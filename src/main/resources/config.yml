@@ -78,5 +78,8 @@ StaffPlusPlusDiscord:
         webhookUrl: ""
         # Trigger a discord message whenever a a player sends a chat message containing predefined words/phrases
         phrase-detection: false
+    commanddetection:
+        enabled: false
+        webhookUrl: ""
     staffchat:
         sync: false

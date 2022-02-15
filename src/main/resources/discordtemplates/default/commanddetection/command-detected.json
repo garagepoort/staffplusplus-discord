@@ -1,0 +1,30 @@
+// Context:
+// detectedEvent: CommandDetectedEvent => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/commanddetection/CommandDetectedEvent.java
+// timestamp: String
+{
+    "content": "Command detection from Staff++",
+    "embeds": [
+        {
+            "title": "Command detection from ${detectedEvent.player.name}",
+            "url": "https://www.spigotmc.org/resources/staff.83562/",
+            "color": "16601379",
+            "timestamp": "${timestamp}",
+            "footer": {
+                "text": "Provided by Staff++",
+                "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
+            },
+            "fields": [
+                {
+                    "name": "Player",
+                    "value": "${detectedEvent.player.name}\n[${detectedEvent.player.uniqueId}]",
+                    "inline": false
+                },
+                {
+                    "name": "Full command",
+                    "value": "${detectedEvent.command}",
+                    "inline": false
+                }
+            ]
+        }
+    ]
+}
