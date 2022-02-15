@@ -1,6 +1,6 @@
 // Context:
 // warning: IWarning => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/warnings/IWarning.java
-// appeal: IWarningAppeal => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/appeals/IAppeal.java
+// appeal: IAppeal => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/appeals/IAppeal.java
 // timestamp: String
 {
     "content": "",

@@ -1,9 +1,9 @@
 // Context:
-// warning: IWarning => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/warnings/IWarning.java
+// mute: IMute => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/mute/IMute.java
 // appeal: IAppeal => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/appeals/IAppeal.java
 // timestamp: String
 {
-    "content": "Warning Appeal update from Staff++",
+    "content": "Mute Appeal update from Staff++",
     "embeds": [
         {
             "title": "Appeal approved by: ${appeal.resolverName}",
@@ -38,28 +38,42 @@
                 },
                 #ENDIF
                 {
-                    "name": "Warning Info",
+                    "name": "Mute Info",
                     "value": "----------------------------------------------",
                     "inline": false
                 },
                 {
-                    "name": "Severity",
-                    "value": "**${warning.severity}(${warning.score})**",
+                    "name": "Issuer",
+                    "value": "${mute.issuerName}\n[${mute.issuerUuid}]",
+                    "inline": true
+                },
+                {
+                    "name": "Muted:",
+                    "value": "${mute.targetName}\n[${mute.targetUuid}]",
+                    "inline": true
+                },
+                #IF mute.endDate != null
+                {
+                    "name": "Type",
+                    "value": "TEMPORARY",
                     "inline": false
                 },
                 {
-                    "name": "Issuer",
-                    "value": "${warning.issuerName}\n[${warning.issuerUuid}]",
+                    "name": "Ends at: ",
+                    "value": "${utils:parseTime(mute.endDate)}",
                     "inline": true
                 },
+                #ENDIF
+                #IF mute.endDate == null
                 {
-                    "name": "Culprit",
-                    "value": "${warning.targetName}\n[${warning.targetUuid}]",
-                    "inline": true
+                    "name": "Type",
+                    "value": "PERMANENT",
+                    "inline": false
                 },
+                #ENDIF
                 {
-                    "name": "Reason",
-                    "value": "```${warning.reason}```",
+                    "name": "Mute Reason",
+                    "value": "```${mute.reason}```",
                     "inline": false
                 }
             ]

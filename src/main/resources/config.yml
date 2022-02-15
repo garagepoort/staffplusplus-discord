@@ -35,6 +35,11 @@ StaffPlusPlusDiscord:
         unban: false
         extension: false
         reduction: false
+        appeals:
+            webhookUrl: ""
+            notifyCreate: false
+            notifyApproved: false
+            notifyRejected: false
     ipbans:
         webhookUrl: ""
         ban: false
@@ -46,6 +51,11 @@ StaffPlusPlusDiscord:
         webhookUrl: ""
         mute: false
         unmute: false
+        appeals:
+            webhookUrl: ""
+            notifyCreate: false
+            notifyApproved: false
+            notifyRejected: false
     altDetect:
         webhookUrl: ""
         # Levels that should be notified to discord, leave empty to disable all notifications. Should be semi-colon separated

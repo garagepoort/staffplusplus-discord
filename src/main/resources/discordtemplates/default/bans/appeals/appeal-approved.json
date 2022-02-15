@@ -1,9 +1,9 @@
 // Context:
-// warning: IWarning => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/warnings/IWarning.java
+// ban: IBan => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/ban/IBan.java
 // appeal: IAppeal => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/appeals/IAppeal.java
 // timestamp: String
 {
-    "content": "Warning Appeal update from Staff++",
+    "content": "Ban Appeal update from Staff++",
     "embeds": [
         {
             "title": "Appeal approved by: ${appeal.resolverName}",
@@ -38,28 +38,42 @@
                 },
                 #ENDIF
                 {
-                    "name": "Warning Info",
+                    "name": "Ban Info",
                     "value": "----------------------------------------------",
                     "inline": false
                 },
                 {
-                    "name": "Severity",
-                    "value": "**${warning.severity}(${warning.score})**",
+                    "name": "Issuer",
+                    "value": "${ban.issuerName}\n[${ban.issuerUuid}]",
+                    "inline": true
+                },
+                {
+                    "name": "Banned:",
+                    "value": "${ban.targetName}\n[${ban.targetUuid}]",
+                    "inline": true
+                },
+                #IF ban.endDate != null
+                {
+                    "name": "Type",
+                    "value": "TEMPORARY",
                     "inline": false
                 },
                 {
-                    "name": "Issuer",
-                    "value": "${warning.issuerName}\n[${warning.issuerUuid}]",
+                    "name": "Ends at: ",
+                    "value": "${utils:parseTime(ban.endDate)}",
                     "inline": true
                 },
+                #ENDIF
+                #IF ban.endDate == null
                 {
-                    "name": "Culprit",
-                    "value": "${warning.targetName}\n[${warning.targetUuid}]",
-                    "inline": true
+                    "name": "Type",
+                    "value": "PERMANENT",
+                    "inline": false
                 },
+                #ENDIF
                 {
-                    "name": "Reason",
-                    "value": "```${warning.reason}```",
+                    "name": "Ban Reason",
+                    "value": "```${ban.reason}```",
                     "inline": false
                 }
             ]

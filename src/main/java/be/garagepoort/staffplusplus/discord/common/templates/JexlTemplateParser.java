@@ -1,5 +1,6 @@
 package be.garagepoort.staffplusplus.discord.common.templates;
 
+import be.garagepoort.staffplusplus.discord.StaffPlusPlusDiscord;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
@@ -26,7 +27,7 @@ public class JexlTemplateParser {
         boolean keepLine = true;
         for (String line : template.split("\n")) {
             line = line.trim();
-            if(line.startsWith("//")) {
+            if (line.startsWith("//")) {
                 continue;
             }
             if (!line.startsWith(ENDIF) && !keepLine) {
@@ -56,8 +57,13 @@ public class JexlTemplateParser {
         Matcher m = p.matcher(line);
         while (m.find()) {
             JexlExpression expression = jexl.createExpression(m.group(1));
-            String evaluate = expression.evaluate(jexlContext).toString();
-            line = line.replaceFirst(regex, evaluate);
+            Object evaluatedExpression = expression.evaluate(jexlContext);
+            if (evaluatedExpression == null) {
+                StaffPlusPlusDiscord.get().getLogger().warning("Invalid expression: [" + expression.getSourceText() + "]");
+            } else {
+                String evaluate = evaluatedExpression.toString();
+                line = line.replaceFirst(regex, evaluate);
+            }
         }
         return line;
     }
