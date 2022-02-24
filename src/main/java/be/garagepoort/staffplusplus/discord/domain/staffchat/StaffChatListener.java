@@ -4,6 +4,7 @@ import be.garagepoort.mcioc.IocBean;
 import be.garagepoort.mcioc.IocMultiProvider;
 import be.garagepoort.mcioc.configuration.ConfigProperty;
 import be.garagepoort.staffplusplus.discord.StaffPlusPlusDiscord;
+import be.garagepoort.staffplusplus.discord.common.PluginDisable;
 import be.garagepoort.staffplusplus.discord.common.StaffPlusPlusListener;
 import github.scarsz.discordsrv.DiscordSRV;
 import net.shortninja.staffplusplus.IStaffPlus;
@@ -14,8 +15,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 @IocBean
-@IocMultiProvider(StaffPlusPlusListener.class)
-public class StaffChatListener implements StaffPlusPlusListener {
+@IocMultiProvider({StaffPlusPlusListener.class, PluginDisable.class})
+public class StaffChatListener implements StaffPlusPlusListener, PluginDisable {
     @ConfigProperty("StaffPlusPlusDiscord.staffchat.sync")
     private boolean syncEnabled;
 
@@ -63,5 +64,12 @@ public class StaffChatListener implements StaffPlusPlusListener {
 
     @Override
     public void validate() {
+    }
+
+    @Override
+    public void disable(StaffPlusPlusDiscord staffPlus) {
+        if (staffPlus.getServer().getPluginManager().isPluginEnabled("DiscordSRV")) {
+            DiscordSRV.api.unsubscribe(discordListener);
+        }
     }
 }
