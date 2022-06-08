@@ -59,8 +59,12 @@ public class XrayListener implements StaffPlusPlusListener {
     private void buildXray(XrayEvent event, String templateFile) {
         String time = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
+        List<String> enchantments = new ArrayList<>();
+        event.getPickaxe().getEnchantments()
+            .forEach((k, v) -> enchantments.add(k.getName() + " " + v));
         JexlContext jc = new MapContext();
         jc.set("xrayEvent", event);
+        jc.set("enchantments", String.join("\\\\n", enchantments));
         jc.set("timestamp", time);
         String template = JexlTemplateParser.parse(templateRepository.getTemplate(templateFile), jc);
         DiscordUtil.sendEvent(discordClient, webhookUrl, template);

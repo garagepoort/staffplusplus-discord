@@ -52,7 +52,7 @@ public class StaffChatListener implements StaffPlusPlusListener, PluginDisable {
         // Send to discord off the main thread (just like DiscordSRV does)
         if (staffPlusPlusDiscord.getServer().getPluginManager().isPluginEnabled("DiscordSRV")) {
             staffPlusPlusDiscord.getServer().getScheduler().runTaskAsynchronously(staffPlusPlusDiscord, () ->
-                    DiscordSRV.getPlugin().processChatMessage(event.getPlayer(), event.getMessage(), DiscordStaffChatListener.CHANNEL_PREFIX + event.getChannel(), false)
+                DiscordSRV.getPlugin().processChatMessage(event.getPlayer(), event.getMessage(), DiscordStaffChatListener.CHANNEL_PREFIX + event.getChannel(), false)
             );
         }
     }
@@ -68,8 +68,10 @@ public class StaffChatListener implements StaffPlusPlusListener, PluginDisable {
 
     @Override
     public void disable(StaffPlusPlusDiscord staffPlus) {
-        if (staffPlus.getServer().getPluginManager().isPluginEnabled("DiscordSRV")) {
-            DiscordSRV.api.unsubscribe(discordListener);
+        if (discordListener != null) {
+            if (staffPlus.getServer().getPluginManager().isPluginEnabled("DiscordSRV")) {
+                DiscordSRV.api.unsubscribe(discordListener);
+            }
         }
     }
 }

@@ -22,6 +22,11 @@
                     "name": "Xray Info:",
                     "value": "${xrayEvent.player.name} has mined ${xrayEvent.amount} ${xrayEvent.type}${xrayEvent.duration.isPresent() ? ' in ' + xrayEvent.duration.get() / 1000 + ' seconds' : ''}!",
                     "inline": true
+                },
+                {
+                    "name": "Tool used:",
+                    "value": "${xrayEvent.getPickaxe().getType().name() + '\\\\n' + enchantments}",
+                    "inline": true
                 }
             ]
         }
