@@ -8,7 +8,5 @@ public class StaffPlusPlusConfiguration {
 
     @ConfigProperty("StaffPlusPlusDiscord.templatePack")
     public String templatePack = "default";
-    @ConfigProperty("StaffPlusPlusDiscord.updateTemplates")
-    public boolean updateTemplates = true;
 
 }

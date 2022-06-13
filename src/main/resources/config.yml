@@ -1,6 +1,5 @@
 StaffPlusPlusDiscord:
     templatePack: "default" # Choose from template packs "default" or "videndum"
-    updateTemplates: true
     # REPORTS
 
     reports:

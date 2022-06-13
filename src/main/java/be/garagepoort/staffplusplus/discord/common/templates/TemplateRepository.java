@@ -50,11 +50,10 @@ public class TemplateRepository {
     };
 
     public TemplateRepository(StaffPlusPlusConfiguration staffPlusPlusConfiguration) {
-        boolean replaceTemplates = staffPlusPlusConfiguration.updateTemplates;
         String templatePack = staffPlusPlusConfiguration.templatePack;
 
         stream(templateFiles)
-            .forEach(templateFile -> TemplateResourceUtil.saveTemplate(templatePack, templateFile.getFilePath(), replaceTemplates));
+            .forEach(templateFile -> TemplateResourceUtil.saveTemplate(templatePack, templateFile.getFilePath(), templatePack.equalsIgnoreCase("default")));
 
         for (TemplateFile templateFile : templateFiles) {
             templates.put(templateFile.getId(), Utils.readTemplate(getFullTemplatePath(templatePack, templateFile)));
