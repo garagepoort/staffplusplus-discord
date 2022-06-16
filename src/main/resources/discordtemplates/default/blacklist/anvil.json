@@ -1,0 +1,35 @@
+// Context:
+// censoredEvent: CommandDetectedEvent => https://github.com/garagepoort/staffplusplus-api/blob/master/src/main/java/net/shortninja/staffplusplus/blacklist/BlacklistCensoredEvent.java
+// timestamp: String
+{
+    "content": "Item name censored on ${censoredEvent.serverName}",
+    "embeds": [
+        {
+            "title": "Item name censored from ${censoredEvent.player.name}",
+            "url": "https://www.spigotmc.org/resources/staff.83562/",
+            "color": "16601379",
+            "timestamp": "${timestamp}",
+            "footer": {
+                "text": "Provided by Staff++",
+                "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
+            },
+            "fields": [
+                {
+                    "name": "Player",
+                    "value": "${censoredEvent.player.name}\n[${censoredEvent.player.uniqueId}]",
+                    "inline": false
+                },
+                {
+                    "name": "Original Message",
+                    "value": "```${censoredEvent.originalMessage}```",
+                    "inline": false
+                },
+                {
+                    "name": "Censored Message",
+                    "value": "```${censoredEvent.censoredMessage}```",
+                    "inline": false
+                }
+            ]
+        }
+    ]
+}

@@ -1,4 +1,4 @@
-package be.garagepoort.staffplusplus.discord.domain.chat;
+package be.garagepoort.staffplusplus.discord.domain.blacklist;
 
 import be.garagepoort.mcioc.IocBean;
 import be.garagepoort.mcioc.IocMultiProvider;
@@ -13,7 +13,8 @@ import be.garagepoort.staffplusplus.discord.common.config.WebhookConfig;
 import be.garagepoort.staffplusplus.discord.common.config.WebhookConfigTransformer;
 import be.garagepoort.staffplusplus.discord.common.templates.JexlTemplateParser;
 import be.garagepoort.staffplusplus.discord.common.templates.TemplateRepository;
-import net.shortninja.staffplusplus.chat.PhrasesDetectedEvent;
+import net.shortninja.staffplusplus.blacklist.BlacklistCensoredEvent;
+import net.shortninja.staffplusplus.blacklist.BlacklistType;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.MapContext;
 import org.bukkit.event.EventHandler;
@@ -24,19 +25,23 @@ import java.time.format.DateTimeFormatter;
 
 @IocBean
 @IocMultiProvider(StaffPlusPlusListener.class)
-public class ChatListener implements StaffPlusPlusListener {
+public class BlacklistListener implements StaffPlusPlusListener {
 
-    @ConfigProperty("StaffPlusPlusDiscord.chat.webhookUrl")
+    @ConfigProperty("StaffPlusPlusDiscord.blacklist.webhookUrl")
     @ConfigTransformer(WebhookConfigTransformer.class)
     private WebhookConfig webhookUrl;
-    @ConfigProperty("StaffPlusPlusDiscord.chat.phrase-detection")
-    private boolean notifyPhraseDetection;
+    @ConfigProperty("StaffPlusPlusDiscord.blacklist.notifyChatCensored")
+    private boolean notifyChat;
+    @ConfigProperty("StaffPlusPlusDiscord.blacklist.notifySignsCensored")
+    private boolean notifySigns;
+    @ConfigProperty("StaffPlusPlusDiscord.blacklist.notifyAnvilCensored")
+    private boolean notifyAnvil;
 
     private DiscordClient discordClient;
     private final TemplateRepository templateRepository;
     private final DiscordClientBuilder discordClientBuilder;
 
-    public ChatListener(TemplateRepository templateRepository, DiscordClientBuilder discordClientBuilder)  {
+    public BlacklistListener(TemplateRepository templateRepository, DiscordClientBuilder discordClientBuilder)  {
         this.templateRepository = templateRepository;
         this.discordClientBuilder = discordClientBuilder;
     }
@@ -46,33 +51,37 @@ public class ChatListener implements StaffPlusPlusListener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
-    public void handlePhraseDetectedEvent(PhrasesDetectedEvent event) {
-        if (!notifyPhraseDetection) {
-            return;
+    public void handleBlacklistEvent(BlacklistCensoredEvent event) {
+        if (notifyAnvil && event.getBlacklistType() == BlacklistType.ANVIL) {
+            sendCensoredNotification(event, "blacklist/anvil");
+        }
+        if (notifyChat && event.getBlacklistType() == BlacklistType.CHAT) {
+            sendCensoredNotification(event, "blacklist/chat");
+        }
+        if (notifySigns && event.getBlacklistType() == BlacklistType.SIGN) {
+            sendCensoredNotification(event, "blacklist/signs");
         }
 
-        buildPhraseDetected(event, "chat/chat-phrase-detected");
     }
 
-    private void buildPhraseDetected(PhrasesDetectedEvent detectedEvent, String templateFile) {
+    private void sendCensoredNotification(BlacklistCensoredEvent censoredEvent, String templateFile) {
         String time = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
         JexlContext jc = new MapContext();
-        jc.set("detectedEvent", detectedEvent);
+        jc.set("censoredEvent", censoredEvent);
         jc.set("timestamp", time);
-        jc.set("detectedPhrases", String.join(" | ", detectedEvent.getDetectedPhrases()));
         String template = JexlTemplateParser.parse(templateRepository.getTemplate(templateFile), jc);
         DiscordUtil.sendEvent(discordClient, webhookUrl, template);
     }
 
     public boolean isEnabled() {
-        return notifyPhraseDetection;
+        return notifyAnvil || notifyChat || notifySigns;
     }
 
     @Override
     public void validate() {
         if (isEnabled() && webhookUrl == null) {
-            StaffPlusPlusDiscord.get().getLogger().warning("No chat webhookUrl provided in the configuration.");
+            StaffPlusPlusDiscord.get().getLogger().warning("No webhookUrl provided for Blacklist");
         }
     }
 }

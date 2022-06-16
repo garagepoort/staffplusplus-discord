@@ -14,10 +14,13 @@ public class StaffPlusPlusDiscord extends TubingPlugin {
         return plugin;
     }
 
+    @Override
+    protected void beforeEnable() {
+        plugin = this;
+    }
 
     @Override
     protected void enable() {
-        plugin = this;
         getLogger().info("StaffPlusPlusDiscord plugin enabled");
         saveDefaultConfig();
         FileConfiguration config = getConfig();

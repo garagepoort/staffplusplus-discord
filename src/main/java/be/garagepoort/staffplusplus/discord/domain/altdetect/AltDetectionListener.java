@@ -4,6 +4,7 @@ import be.garagepoort.mcioc.IocBean;
 import be.garagepoort.mcioc.IocMultiProvider;
 import be.garagepoort.mcioc.configuration.ConfigProperty;
 import be.garagepoort.mcioc.configuration.ConfigTransformer;
+import be.garagepoort.staffplusplus.discord.StaffPlusPlusDiscord;
 import be.garagepoort.staffplusplus.discord.api.DiscordClient;
 import be.garagepoort.staffplusplus.discord.api.DiscordClientBuilder;
 import be.garagepoort.staffplusplus.discord.api.DiscordUtil;
@@ -73,7 +74,7 @@ public class AltDetectionListener implements StaffPlusPlusListener {
     @Override
     public void validate() {
         if (isEnabled() && webhookUrl == null) {
-            throw new RuntimeException("No altdetect webhookUrl provided in the configuration.");
+            StaffPlusPlusDiscord.get().getLogger().warning("No altdetect webhookUrl provided in the configuration.");
         }
     }
 }

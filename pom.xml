@@ -28,7 +28,7 @@
         <dependency>
             <groupId>net.shortninja.staffplus</groupId>
             <artifactId>staffplusplus-api</artifactId>
-            <version>7.0.0</version>
+            <version>8.0.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>be.garagepoort.mcioc</groupId>
             <artifactId>tubing</artifactId>
-            <version>4.1.3</version>
+            <version>6.1.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

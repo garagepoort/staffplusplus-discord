@@ -46,6 +46,11 @@ StaffPlusPlusDiscord:
     kicks:
         webhookUrl: ""
         kick: false
+    blacklist:
+        webhookUrl: ""
+        notifyChatCensored: false
+        notifySignsCensored: false
+        notifyAnvilCensored: false
     mutes:
         webhookUrl: ""
         mute: false
