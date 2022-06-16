@@ -1,7 +1,3 @@
-# 1.16.56
+# Staff++ Discord integration
 
-# features
-- Added support for multiple staff chat channels being synced with discord.
-
-# bug fixes
-- reloading the plugin duplicated messages from staff chat
+A spigot plugin which sends updates to Discord about staff++ events happening on your server.
