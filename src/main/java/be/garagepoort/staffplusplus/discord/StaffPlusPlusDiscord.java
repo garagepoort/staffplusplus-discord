@@ -1,12 +1,9 @@
 package be.garagepoort.staffplusplus.discord;
 
-import be.garagepoort.mcioc.TubingPlugin;
+import be.garagepoort.mcioc.tubingbukkit.TubingBukkitPlugin;
 import be.garagepoort.staffplusplus.discord.common.PluginDisable;
-import be.garagepoort.staffplusplus.discord.common.config.ConfigUpdater;
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
 
-public class StaffPlusPlusDiscord extends TubingPlugin {
+public class StaffPlusPlusDiscord extends TubingBukkitPlugin {
 
     private static StaffPlusPlusDiscord plugin;
 
@@ -22,13 +19,6 @@ public class StaffPlusPlusDiscord extends TubingPlugin {
     @Override
     protected void enable() {
         getLogger().info("StaffPlusPlusDiscord plugin enabled");
-        saveDefaultConfig();
-        FileConfiguration config = getConfig();
-        ConfigUpdater.updateConfig(this);
-        if (!ConfigUpdater.updateConfig(this)) {
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
     }
 
     @Override

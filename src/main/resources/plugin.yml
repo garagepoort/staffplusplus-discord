@@ -3,7 +3,7 @@ main: be.garagepoort.staffplusplus.discord.StaffPlusPlusDiscord
 author: garagepoort
 version: ${project.version}
 api-version: 1.13
-depend: [StaffPlus]
+depend: [StaffPlusPlus]
 softdepend: [DiscordSRV, PlaceholderAPI]
 commands:
     staffplusplusdiscord:
