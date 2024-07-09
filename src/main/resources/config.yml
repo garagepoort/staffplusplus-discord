@@ -1,5 +1,6 @@
 StaffPlusPlusDiscord:
     templatePack: "default" # Choose from template packs "default" or "videndum"
+    timestamp-format: "yyyy-MM-dd'T'HH:mm:ss"
     # REPORTS
 
     reports:

@@ -1,5 +1,7 @@
 package be.garagepoort.staffplusplus.discord.common.templates;
 
+import be.garagepoort.staffplusplus.discord.StaffPlusPlusDiscord;
+import be.garagepoort.staffplusplus.discord.common.DateFormatter;
 import be.garagepoort.staffplusplus.discord.common.JavaUtils;
 import net.shortninja.staffplusplus.ILocation;
 import org.bukkit.Location;
@@ -13,7 +15,7 @@ public class JexlUtilities {
 
     public static String parseTime(ZonedDateTime zonedDateTime) {
         LocalDateTime endDateTime = LocalDateTime.ofInstant(zonedDateTime.toInstant(), ZoneOffset.UTC);
-        return endDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return StaffPlusPlusDiscord.get().getIocContainer().get(DateFormatter.class).format(endDateTime);
     }
 
     public static String parseLocation(String serverName, Location location) {
