@@ -1,7 +1,6 @@
 package be.garagepoort.staffplusplus.discord.common.templates;
 
 import be.garagepoort.staffplusplus.discord.StaffPlusPlusDiscord;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.net.URL;
@@ -56,7 +55,7 @@ public class TemplateResourceUtil {
         }
     }
 
-    private static InputStream getResource(@NotNull String filename) {
+    private static InputStream getResource(String filename) {
         try {
             URL url = TemplateResourceUtil.class.getClassLoader().getResource(filename);
             if (url == null) {
